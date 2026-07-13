@@ -1,8 +1,49 @@
-import { generateText } from 'ai'
+import { generateText, type LanguageModel } from 'ai'
+import { createGroq } from '@ai-sdk/groq'
+import { createGoogleGenerativeAI } from '@ai-sdk/google'
+import { createCerebras } from '@ai-sdk/cerebras'
 
 export const maxDuration = 60
 
-const MODEL = 'openai/gpt-4.1-mini'
+/*
+ * Provider chain: first configured provider wins; on runtime failure
+ * (rate limit, bad key) the next one is tried. Gateway last — it needs
+ * Vercel billing enabled.
+ */
+function providerChain(): { name: string; model: LanguageModel }[] {
+  const chain: { name: string; model: LanguageModel }[] = []
+  if (process.env.GROQ_API_KEY) {
+    const groq = createGroq({ apiKey: process.env.GROQ_API_KEY })
+    chain.push({ name: 'groq', model: groq('llama-3.3-70b-versatile') })
+  }
+  if (process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+    const google = createGoogleGenerativeAI({
+      apiKey:
+        process.env.GEMINI_API_KEY ?? process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+    })
+    chain.push({ name: 'gemini', model: google('gemini-2.0-flash') })
+  }
+  if (process.env.CEREBRAS_API_KEY) {
+    const cerebras = createCerebras({ apiKey: process.env.CEREBRAS_API_KEY })
+    chain.push({ name: 'cerebras', model: cerebras('llama-3.3-70b') })
+  }
+  chain.push({ name: 'gateway', model: 'openai/gpt-4.1-mini' })
+  return chain
+}
+
+async function generate(opts: { system: string; prompt: string }) {
+  let lastErr: Error | null = null
+  for (const { name, model } of providerChain()) {
+    try {
+      const { text } = await generateText({ model, ...opts })
+      return text
+    } catch (err) {
+      lastErr = err as Error
+      console.log(`[ai] provider ${name} failed:`, lastErr.message)
+    }
+  }
+  throw lastErr ?? new Error('No AI provider available')
+}
 
 type Body = {
   action: 'chat' | 'summary' | 'bullets' | 'skills' | 'ats' | 'cover' | 'tailor'
@@ -67,8 +108,7 @@ export async function POST(req: Request) {
 
   try {
     if (action === 'summary') {
-      const { text } = await generateText({
-        model: MODEL,
+      const text = await generate({
         system:
           'You are an expert resume writer. Write a concise, ATS-friendly professional summary in 3 sentences. Use first-person implied voice (no "I"), lead with experience and a flagship strength, and quantify impact where reasonable. Return ONLY the summary text, no preamble, no quotes.',
         prompt: `Write a professional summary for this candidate.\n\n${resumeContext(context)}`,
@@ -77,8 +117,7 @@ export async function POST(req: Request) {
     }
 
     if (action === 'bullets') {
-      const { text } = await generateText({
-        model: MODEL,
+      const text = await generate({
         system:
           'You are an expert resume writer. Rewrite the given work experience into 3-4 punchy, achievement-oriented bullet points. Each bullet starts with a strong action verb and includes a measurable result where plausible. Return ONLY the bullets, one per line, with no numbering, no dashes, and no extra text.',
         prompt: `Rewrite the highlights for this role into strong resume bullets.\n\n${resumeContext(context)}`,
@@ -91,8 +130,7 @@ export async function POST(req: Request) {
     }
 
     if (action === 'skills') {
-      const { text } = await generateText({
-        model: MODEL,
+      const text = await generate({
         system:
           'You are a resume expert. Suggest 8-10 additional relevant, in-demand skills for the candidate based on their role and existing skills. Mix hard skills and tools. Do NOT repeat skills they already have. Return ONLY skill names, one per line, no numbering, no extra text.',
         prompt: `Suggest additional skills.\n\n${resumeContext(context)}`,
@@ -106,8 +144,7 @@ export async function POST(req: Request) {
     }
 
     if (action === 'ats') {
-      const { text } = await generateText({
-        model: MODEL,
+      const text = await generate({
         system:
           'You are an ATS (applicant tracking system) expert and senior recruiter. Analyze the resume against the job description if provided. Respond in EXACTLY this format:\nSCORE: <number 0-100>\nVERDICT: <one sentence overall verdict>\nSTRENGTHS:\n- <strength 1>\n- <strength 2>\nIMPROVEMENTS:\n- <specific improvement 1>\n- <specific improvement 2>\n- <specific improvement 3>\nMISSING_KEYWORDS: <comma-separated keywords from the JD missing in the resume, or "none">',
         prompt: `Analyze this resume.\n\nRESUME:\n${resumeContext(context)}\n\n${jobDescription ? `JOB DESCRIPTION:\n${jobDescription}` : 'No job description provided — analyze general ATS readiness.'}`,
@@ -116,8 +153,7 @@ export async function POST(req: Request) {
     }
 
     if (action === 'tailor') {
-      const { text } = await generateText({
-        model: MODEL,
+      const text = await generate({
         system:
           'You are an expert resume coach. Given a resume and a job description, give the 5 most impactful, specific changes the candidate should make to tailor the resume for this job. Be concrete: name exact keywords to add, bullets to rewrite (show the rewrite), and sections to reorder. Use a numbered list. Keep it under 250 words.',
         prompt: `RESUME:\n${resumeContext(context)}\n\nJOB DESCRIPTION:\n${jobDescription ?? ''}`,
@@ -126,8 +162,7 @@ export async function POST(req: Request) {
     }
 
     if (action === 'cover') {
-      const { text } = await generateText({
-        model: MODEL,
+      const text = await generate({
         system:
           'You are an expert cover letter writer. Write a compelling, specific cover letter (250-350 words) in a confident but warm tone. Structure: hook opening tied to the company/role, 2 body paragraphs connecting the candidate\'s strongest achievements to the job requirements, and a clear closing call to action. Do NOT use placeholder brackets. Do NOT invent facts beyond the provided resume. Return ONLY the letter body starting with the greeting.',
         prompt: [
@@ -148,8 +183,7 @@ export async function POST(req: Request) {
       .map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.text}`)
       .join('\n')
 
-    const { text } = await generateText({
-      model: MODEL,
+    const text = await generate({
       system:
         'You are a friendly, expert resume coach inside a resume builder app. Give specific, actionable advice. Keep replies short (2-4 sentences or a tight list). When useful, offer concrete rewrites. Never invent facts about the user beyond the context provided.',
       prompt: [

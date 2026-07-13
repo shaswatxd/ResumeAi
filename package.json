@@ -9,6 +9,9 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@ai-sdk/cerebras": "^3.0.7",
+    "@ai-sdk/google": "^4.0.12",
+    "@ai-sdk/groq": "^4.0.8",
     "@base-ui/react": "^1.5.0",
     "@vercel/analytics": "1.6.1",
     "ai": "^7.0.22",
