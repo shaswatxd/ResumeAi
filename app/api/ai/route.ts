@@ -7,8 +7,7 @@ export const maxDuration = 60
 
 /*
  * Provider chain: first configured provider wins; on runtime failure
- * (rate limit, bad key) the next one is tried. Gateway last — it needs
- * Vercel billing enabled.
+ * (rate limit, bad key) the next one is tried.
  */
 function providerChain(): { name: string; model: LanguageModel }[] {
   const chain: { name: string; model: LanguageModel }[] = []
@@ -27,7 +26,6 @@ function providerChain(): { name: string; model: LanguageModel }[] {
     const cerebras = createCerebras({ apiKey: process.env.CEREBRAS_API_KEY })
     chain.push({ name: 'cerebras', model: cerebras('llama-3.3-70b') })
   }
-  chain.push({ name: 'gateway', model: 'openai/gpt-4.1-mini' })
   return chain
 }
 

@@ -9,7 +9,7 @@ Build a standout resume in minutes: live A4 preview, 12 professional templates, 
 - **Live preview** — every edit rendered instantly on a pixel-perfect A4 sheet
 - **12 templates** — Dark Glass, Classic Pro, Minimal, Sidebar, Banded, Executive, Modern Split, Compact, Elegant, Timeline, Bold Type, Tech Mono
 - **10 accent colors** + font size and line-spacing controls
-- **Real AI (Vercel AI Gateway)**
+- **Real AI (Groq → Gemini → Cerebras fallback chain)**
   - Generate professional summary from your profile
   - Rewrite experience bullets into quantified achievements
   - Suggest relevant skills
@@ -25,7 +25,7 @@ Build a standout resume in minutes: live A4 preview, 12 professional templates, 
 
 ## Stack
 
-Next.js 16 (App Router, Turbopack) · React 19 · Tailwind CSS 4 · Vercel AI SDK (AI Gateway, `openai/gpt-4.1-mini`) · lucide-react
+Next.js 16 (App Router, Turbopack) · React 19 · Tailwind CSS 4 · Vercel AI SDK · lucide-react
 
 ## Develop
 
@@ -34,14 +34,14 @@ pnpm install
 pnpm dev
 ```
 
-AI locally needs a Vercel AI Gateway key:
+AI needs at least one provider key (first configured wins, failures fall through to the next):
 
 ```bash
 # .env.local
-AI_GATEWAY_API_KEY=your_key
+GROQ_API_KEY=your_key        # primary — llama-3.3-70b-versatile
+GEMINI_API_KEY=your_key      # fallback — gemini-2.0-flash
+CEREBRAS_API_KEY=your_key    # fallback — llama-3.3-70b
 ```
-
-On Vercel deployments the gateway authenticates automatically via OIDC — no key needed.
 
 ## Deploy
 
