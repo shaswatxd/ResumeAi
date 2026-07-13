@@ -1,21 +1,38 @@
 'use client'
 
 import {
-  Mail,
-  Phone,
-  MapPin,
-  Globe,
-  Link as Linkedin,
-  Code2 as Github,
-  Link2,
-} from 'lucide-react'
-import {
   type AccentTheme,
   type DocSettings,
   type ResumeData,
   type TemplateId,
   DEFAULT_SETTINGS,
 } from '@/lib/resume-types'
+import {
+  type TP,
+  type SectionComp,
+  hasContact,
+  contactBits,
+  Photo,
+  ContactBit,
+  SideBit,
+  Section,
+  ClassicSection,
+  MinimalSection,
+  BulletList,
+  ProjectsBlock,
+  CertificationsBlock,
+  AchievementsBlock,
+  LanguagesBlock,
+  InterestsBlock,
+  ReferencesBlock,
+  ExtraBlocks,
+  SkillChips,
+  ExperienceBlock,
+  EducationBlock,
+} from '@/components/resume/blocks'
+import { TEMPLATES_A } from '@/components/resume/templates-a'
+import { TEMPLATES_B } from '@/components/resume/templates-b'
+import { TEMPLATES_C } from '@/components/resume/templates-c'
 
 type Props = {
   data: ResumeData
@@ -24,323 +41,16 @@ type Props = {
   settings?: DocSettings
 }
 
-type TP = { data: ResumeData; theme: AccentTheme }
-
-function hasContact(d: ResumeData) {
-  return d.email || d.phone || d.location || d.linkedin || d.github || d.website
-}
-
-function contactBits(d: ResumeData) {
-  return [
-    d.email && { icon: Mail, text: d.email },
-    d.phone && { icon: Phone, text: d.phone },
-    d.location && { icon: MapPin, text: d.location },
-    d.linkedin && { icon: Linkedin, text: d.linkedin },
-    d.github && { icon: Github, text: d.github },
-    d.website && { icon: Globe, text: d.website },
-  ].filter(Boolean) as { icon: typeof Mail; text: string }[]
-}
-
-function Initials({ name }: { name: string }) {
-  const initials = name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((n) => n[0]?.toUpperCase())
-    .join('')
-  return <span>{initials || 'AB'}</span>
-}
-
-/* ------------------------------- helpers ---------------------------------- */
-function ContactBit({ icon: Icon, text }: { icon: typeof Mail; text: string }) {
-  return (
-    <span className="flex items-center gap-1">
-      <Icon className="size-3" />
-      {text}
-    </span>
-  )
-}
-
-function SideBit({ icon: Icon, text }: { icon: typeof Mail; text: string }) {
-  return (
-    <span className="flex items-center gap-2 break-all">
-      <Icon className="size-3 shrink-0" />
-      {text}
-    </span>
-  )
-}
-
-function Section({
-  title,
-  theme,
-  children,
-}: {
-  title: string
-  theme: AccentTheme
-  children: React.ReactNode
-}) {
-  return (
-    <section>
-      <h2 className="mb-2.5 flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
-        <span className="h-0.5 w-5 rounded-full" style={{ background: theme.accent }} />
-        {title}
-      </h2>
-      {children}
-    </section>
-  )
-}
-
-function ClassicSection({
-  title,
-  theme,
-  children,
-}: {
-  title: string
-  theme: AccentTheme
-  children: React.ReactNode
-}) {
-  return (
-    <section>
-      <h2
-        className="mb-2 border-b pb-1 text-[13px] font-bold uppercase tracking-wide text-slate-800"
-        style={{ borderColor: `${theme.accent}55` }}
-      >
-        {title}
-      </h2>
-      {children}
-    </section>
-  )
-}
-
-function MinimalSection({
-  title,
-  children,
-}: {
-  title: string
-  children: React.ReactNode
-}) {
-  return (
-    <section>
-      <h2 className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
-        {title}
-      </h2>
-      {children}
-    </section>
-  )
-}
-
-function BulletList({ bullets, theme }: { bullets: string[]; theme: AccentTheme }) {
-  const items = bullets.filter((b) => b.trim())
-  if (items.length === 0) return null
-  return (
-    <ul className="mt-1.5 flex flex-col gap-1">
-      {items.map((b, i) => (
-        <li key={i} className="flex gap-2">
-          <span
-            className="mt-[7px] size-1 shrink-0 rounded-full"
-            style={{ background: theme.accent }}
-          />
-          <span>{b}</span>
-        </li>
-      ))}
-    </ul>
-  )
-}
-
-/* --------------------- shared extra-section renderers --------------------- */
-type SectionComp = (p: {
-  title: string
-  theme: AccentTheme
-  children: React.ReactNode
-}) => React.ReactNode
-
-function ProjectsBlock({ data, theme, S }: TP & { S: SectionComp }) {
-  if (data.projects.length === 0) return null
-  return (
-    <S title="Projects" theme={theme}>
-      <div className="flex flex-col gap-3">
-        {data.projects.map((p) => (
-          <div key={p.id}>
-            <div className="flex flex-wrap items-baseline gap-x-2">
-              <p className="font-semibold text-slate-900">{p.name}</p>
-              {p.tech && (
-                <span className="text-[11px] text-slate-400">{p.tech}</span>
-              )}
-              {p.link && (
-                <span
-                  className="flex items-center gap-1 text-[11px]"
-                  style={{ color: theme.accent }}
-                >
-                  <Link2 className="size-3" />
-                  {p.link}
-                </span>
-              )}
-            </div>
-            {p.description && <p className="text-slate-600">{p.description}</p>}
-          </div>
-        ))}
-      </div>
-    </S>
-  )
-}
-
-function CertificationsBlock({ data, theme, S }: TP & { S: SectionComp }) {
-  if (data.certifications.length === 0) return null
-  return (
-    <S title="Certifications" theme={theme}>
-      <div className="flex flex-col gap-1.5">
-        {data.certifications.map((c) => (
-          <div key={c.id} className="flex items-baseline justify-between gap-3">
-            <p>
-              <span className="font-semibold text-slate-900">{c.name}</span>
-              {c.issuer && <span className="text-slate-500"> — {c.issuer}</span>}
-            </p>
-            {c.year && (
-              <span className="shrink-0 text-[11px] text-slate-400">{c.year}</span>
-            )}
-          </div>
-        ))}
-      </div>
-    </S>
-  )
-}
-
-function AchievementsBlock({ data, theme, S }: TP & { S: SectionComp }) {
-  const items = data.achievements.filter((a) => a.trim())
-  if (items.length === 0) return null
-  return (
-    <S title="Achievements" theme={theme}>
-      <BulletList bullets={items} theme={theme} />
-    </S>
-  )
-}
-
-function LanguagesBlock({ data, theme, S }: TP & { S: SectionComp }) {
-  if (data.languages.length === 0) return null
-  return (
-    <S title="Languages" theme={theme}>
-      <div className="flex flex-wrap gap-x-5 gap-y-1">
-        {data.languages.map((l) => (
-          <span key={l.id}>
-            <span className="font-medium text-slate-900">{l.name}</span>
-            {l.level && <span className="text-slate-500"> · {l.level}</span>}
-          </span>
-        ))}
-      </div>
-    </S>
-  )
-}
-
-function InterestsBlock({ data, theme, S }: TP & { S: SectionComp }) {
-  const items = data.interests.filter((i) => i.trim())
-  if (items.length === 0) return null
-  return (
-    <S title="Interests" theme={theme}>
-      <p className="text-slate-600">{items.join('  ·  ')}</p>
-    </S>
-  )
-}
-
-/* All extra sections in default order, with a given section chrome */
-function ExtraBlocks({ data, theme, S }: TP & { S: SectionComp }) {
-  return (
-    <>
-      <ProjectsBlock data={data} theme={theme} S={S} />
-      <CertificationsBlock data={data} theme={theme} S={S} />
-      <AchievementsBlock data={data} theme={theme} S={S} />
-      <LanguagesBlock data={data} theme={theme} S={S} />
-      <InterestsBlock data={data} theme={theme} S={S} />
-    </>
-  )
-}
-
-function SkillChips({ data, theme }: TP) {
-  if (data.skills.length === 0) return null
-  return (
-    <div className="flex flex-wrap gap-2">
-      {data.skills.map((s) => (
-        <span
-          key={s}
-          className="rounded-md px-2.5 py-1 text-[11.5px] font-medium"
-          style={{ background: theme.soft, color: theme.accent }}
-        >
-          {s}
-        </span>
-      ))}
-    </div>
-  )
-}
-
-function ExperienceBlock({ data, theme, S }: TP & { S: SectionComp }) {
-  if (data.experience.length === 0) return null
-  return (
-    <S title="Experience" theme={theme}>
-      <div className="flex flex-col gap-4">
-        {data.experience.map((e) => (
-          <div key={e.id}>
-            <div className="flex items-baseline justify-between gap-3">
-              <div>
-                <p className="font-semibold text-slate-900">{e.role}</p>
-                <p style={{ color: theme.accent }} className="font-medium">
-                  {e.company}
-                </p>
-              </div>
-              <span className="shrink-0 text-[11px] text-slate-400">
-                {[e.start, e.end].filter(Boolean).join(' — ')}
-              </span>
-            </div>
-            <BulletList bullets={e.bullets} theme={theme} />
-          </div>
-        ))}
-      </div>
-    </S>
-  )
-}
-
-function EducationBlock({ data, theme, S }: TP & { S: SectionComp }) {
-  if (data.education.length === 0) return null
-  return (
-    <S title="Education" theme={theme}>
-      <div className="flex flex-col gap-3">
-        {data.education.map((ed) => (
-          <div key={ed.id} className="flex items-baseline justify-between gap-3">
-            <div>
-              <p className="font-semibold text-slate-900">{ed.degree}</p>
-              <p style={{ color: theme.accent }} className="font-medium">
-                {ed.school}
-              </p>
-              {ed.detail && <p className="text-slate-500">{ed.detail}</p>}
-            </div>
-            <span className="shrink-0 text-[11px] text-slate-400">
-              {[ed.start, ed.end].filter(Boolean).join(' — ')}
-            </span>
-          </div>
-        ))}
-      </div>
-    </S>
-  )
-}
-
 /* ----------------------------- GLASS (default) ---------------------------- */
 function GlassTemplate({ data, theme }: TP) {
   return (
     <div className="flex flex-col gap-5 p-9 text-[13px] text-slate-700">
       <header className="flex items-start gap-5">
-        <div
-          className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl text-2xl font-semibold text-white"
-          style={{ background: theme.accent }}
-        >
-          {data.photo ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={data.photo || '/placeholder.svg'}
-              alt={data.fullName}
-              className="size-full object-cover"
-            />
-          ) : (
-            <Initials name={data.fullName} />
-          )}
-        </div>
+        <Photo
+          data={data}
+          className="size-20 shrink-0 rounded-2xl text-2xl text-white"
+          fallbackStyle={{ background: theme.accent }}
+        />
         <div className="min-w-0 flex-1">
           <h1 className="text-[26px] font-bold leading-tight text-slate-900">
             {data.fullName}
@@ -371,6 +81,7 @@ function GlassTemplate({ data, theme }: TP) {
       <AchievementsBlock data={data} theme={theme} S={Section} />
       <LanguagesBlock data={data} theme={theme} S={Section} />
       <InterestsBlock data={data} theme={theme} S={Section} />
+      <ReferencesBlock data={data} theme={theme} S={Section} />
     </div>
   )
 }
@@ -419,6 +130,9 @@ function ClassicTemplate({ data, theme }: TP) {
 
 /* ------------------------------- MINIMAL ---------------------------------- */
 function MinimalTemplate({ data, theme }: TP) {
+  const S: SectionComp = ({ title, children }) => (
+    <MinimalSection title={title}>{children}</MinimalSection>
+  )
   return (
     <div className="p-11 text-[13px] text-slate-600">
       <header className="mb-7">
@@ -437,8 +151,8 @@ function MinimalTemplate({ data, theme }: TP) {
 
       <div className="flex flex-col gap-6">
         {data.summary && <p className="text-slate-600">{data.summary}</p>}
-        <ExperienceBlock data={data} theme={theme} S={MinimalSection} />
-        <EducationBlock data={data} theme={theme} S={MinimalSection} />
+        <ExperienceBlock data={data} theme={theme} S={S} />
+        <EducationBlock data={data} theme={theme} S={S} />
         {data.skills.length > 0 && (
           <MinimalSection title="Skills">
             <div className="flex flex-wrap gap-x-3 gap-y-1 text-slate-600">
@@ -453,13 +167,7 @@ function MinimalTemplate({ data, theme }: TP) {
             </div>
           </MinimalSection>
         )}
-        <ExtraBlocks
-          data={data}
-          theme={theme}
-          S={({ title, children }) => (
-            <MinimalSection title={title}>{children}</MinimalSection>
-          )}
-        />
+        <ExtraBlocks data={data} theme={theme} S={S} />
       </div>
     </div>
   )
@@ -471,18 +179,10 @@ function SidebarTemplate({ data, theme }: TP) {
     <div className="grid min-h-full grid-cols-[34%_1fr] text-[12.5px]">
       <aside className="flex flex-col gap-6 p-7 text-white" style={{ background: theme.accent }}>
         <div>
-          <div className="mb-3 flex size-16 items-center justify-center overflow-hidden rounded-full bg-white/20 text-xl font-semibold">
-            {data.photo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={data.photo || '/placeholder.svg'}
-                alt={data.fullName}
-                className="size-full object-cover"
-              />
-            ) : (
-              <Initials name={data.fullName} />
-            )}
-          </div>
+          <Photo
+            data={data}
+            className="mb-3 size-16 rounded-full bg-white/20 text-xl"
+          />
           <h1 className="text-[20px] font-bold leading-tight">{data.fullName}</h1>
           <p className="text-[12px] text-white/80">{data.role}</p>
         </div>
@@ -567,6 +267,7 @@ function SidebarTemplate({ data, theme }: TP) {
         <ProjectsBlock data={data} theme={theme} S={Section} />
         <CertificationsBlock data={data} theme={theme} S={Section} />
         <AchievementsBlock data={data} theme={theme} S={Section} />
+        <ReferencesBlock data={data} theme={theme} S={Section} />
       </main>
     </div>
   )
@@ -612,7 +313,7 @@ function ExecutiveTemplate({ data, theme }: TP) {
   const ExecSection: SectionComp = ({ title, children }) => (
     <section>
       <h2
-        className="mb-2.5 font-serif text-[14px] font-semibold tracking-wide text-slate-900"
+        className="mb-2.5 font-serif text-[14px] font-semibold tracking-wide"
         style={{ color: theme.accent }}
       >
         {title}
@@ -639,10 +340,7 @@ function ExecutiveTemplate({ data, theme }: TP) {
           </div>
         )}
       </header>
-      <div
-        className="mb-6 mt-4 border-b-2"
-        style={{ borderColor: theme.accent }}
-      >
+      <div className="mb-6 mt-4 border-b-2" style={{ borderColor: theme.accent }}>
         <div className="mb-[3px] border-b border-slate-200" />
       </div>
 
@@ -700,12 +398,10 @@ function ModernTemplate({ data, theme }: TP) {
         <ExperienceBlock data={data} theme={theme} S={Section} />
         <ProjectsBlock data={data} theme={theme} S={Section} />
         <AchievementsBlock data={data} theme={theme} S={Section} />
+        <ReferencesBlock data={data} theme={theme} S={Section} />
       </main>
 
-      <aside
-        className="flex flex-col gap-6 p-7"
-        style={{ background: theme.soft }}
-      >
+      <aside className="flex flex-col gap-6 p-7" style={{ background: theme.soft }}>
         {hasContact(data) && (
           <div>
             <RailTitle>Contact</RailTitle>
@@ -1032,6 +728,7 @@ function BoldTemplate({ data, theme }: TP) {
       <AchievementsBlock data={data} theme={theme} S={BoldSection} />
       <LanguagesBlock data={data} theme={theme} S={BoldSection} />
       <InterestsBlock data={data} theme={theme} S={BoldSection} />
+      <ReferencesBlock data={data} theme={theme} S={BoldSection} />
     </div>
   )
 }
@@ -1118,11 +815,34 @@ function MonoTemplate({ data, theme }: TP) {
       <AchievementsBlock data={data} theme={theme} S={MonoSection} />
       <LanguagesBlock data={data} theme={theme} S={MonoSection} />
       <InterestsBlock data={data} theme={theme} S={MonoSection} />
+      <ReferencesBlock data={data} theme={theme} S={MonoSection} />
     </div>
   )
 }
 
 /* --------------------------------- switch ---------------------------------- */
+const CORE: Partial<Record<TemplateId, (p: TP) => React.ReactNode>> = {
+  glass: GlassTemplate,
+  classic: ClassicTemplate,
+  minimal: MinimalTemplate,
+  sidebar: SidebarTemplate,
+  banded: BandedTemplate,
+  executive: ExecutiveTemplate,
+  modern: ModernTemplate,
+  compact: CompactTemplate,
+  elegant: ElegantTemplate,
+  timeline: TimelineTemplate,
+  bold: BoldTemplate,
+  mono: MonoTemplate,
+}
+
+const ALL: Partial<Record<TemplateId, (p: TP) => React.ReactNode>> = {
+  ...CORE,
+  ...TEMPLATES_A,
+  ...TEMPLATES_B,
+  ...TEMPLATES_C,
+}
+
 const FONT_ZOOM: Record<string, number> = { sm: 0.92, md: 1, lg: 1.08 }
 const LINE_HEIGHT: Record<string, number> = {
   compact: 1.4,
@@ -1136,35 +856,7 @@ export function ResumeDocument({
   theme,
   settings = DEFAULT_SETTINGS,
 }: Props) {
-  const body = (() => {
-    switch (template) {
-      case 'classic':
-        return <ClassicTemplate data={data} theme={theme} />
-      case 'minimal':
-        return <MinimalTemplate data={data} theme={theme} />
-      case 'sidebar':
-        return <SidebarTemplate data={data} theme={theme} />
-      case 'banded':
-        return <BandedTemplate data={data} theme={theme} />
-      case 'executive':
-        return <ExecutiveTemplate data={data} theme={theme} />
-      case 'modern':
-        return <ModernTemplate data={data} theme={theme} />
-      case 'compact':
-        return <CompactTemplate data={data} theme={theme} />
-      case 'elegant':
-        return <ElegantTemplate data={data} theme={theme} />
-      case 'timeline':
-        return <TimelineTemplate data={data} theme={theme} />
-      case 'bold':
-        return <BoldTemplate data={data} theme={theme} />
-      case 'mono':
-        return <MonoTemplate data={data} theme={theme} />
-      default:
-        return <GlassTemplate data={data} theme={theme} />
-    }
-  })()
-
+  const Tpl = ALL[template] ?? GlassTemplate
   return (
     <div
       style={{
@@ -1172,7 +864,7 @@ export function ResumeDocument({
         lineHeight: LINE_HEIGHT[settings.spacing] ?? 1.6,
       }}
     >
-      {body}
+      <Tpl data={data} theme={theme} />
     </div>
   )
 }
