@@ -15,7 +15,23 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input, Label, Textarea } from '@/components/ui/field'
 import { useResumeStore } from '@/hooks/use-resume-store'
+import { PrintSheet } from '@/components/print-sheet'
 import { cn } from '@/lib/utils'
+import type { ResumeData } from '@/lib/resume-types'
+
+function LetterHead({ data }: { data: ResumeData }) {
+  return (
+    <div className="mb-8 border-b border-slate-200 pb-5">
+      <p className="text-xl font-bold text-slate-900">
+        {data.fullName || 'Your Name'}
+      </p>
+      <p className="text-sm text-slate-500">
+        {[data.email, data.phone, data.location].filter(Boolean).join(' · ') ||
+          'your@email.com'}
+      </p>
+    </div>
+  )
+}
 
 const TONES = ['Professional', 'Warm', 'Confident', 'Enthusiastic'] as const
 
@@ -236,29 +252,14 @@ export default function CoverLetterPage() {
             </div>
           </div>
 
-          <div className="print-area rounded-xl bg-white p-10 shadow-2xl ring-1 ring-black/5">
-            <div className="mb-8 border-b border-slate-200 pb-5">
-              <p className="text-xl font-bold text-slate-900">
-                {data.fullName || 'Your Name'}
-              </p>
-              <p className="text-sm text-slate-500">
-                {[data.email, data.phone, data.location]
-                  .filter(Boolean)
-                  .join(' · ') || 'your@email.com'}
-              </p>
-            </div>
+          <div className="rounded-xl bg-white p-10 shadow-2xl ring-1 ring-black/5">
+            <LetterHead data={data} />
             {letter ? (
-              <>
-                <textarea
-                  className="min-h-[520px] w-full resize-y bg-transparent text-[14px] leading-relaxed text-slate-700 focus:outline-none print:hidden"
-                  value={letter}
-                  onChange={(e) => setLetter(e.target.value)}
-                />
-                {/* textarea can clip when printed; print a plain block instead */}
-                <div className="hidden whitespace-pre-wrap text-[14px] leading-relaxed text-slate-700 print:block">
-                  {letter}
-                </div>
-              </>
+              <textarea
+                className="min-h-[520px] w-full resize-y bg-transparent text-[14px] leading-relaxed text-slate-700 focus:outline-none"
+                value={letter}
+                onChange={(e) => setLetter(e.target.value)}
+              />
             ) : (
               <div className="flex min-h-[420px] items-center justify-center text-center text-sm text-slate-400">
                 Fill in the company and hit Generate —<br />
@@ -266,6 +267,16 @@ export default function CoverLetterPage() {
               </div>
             )}
           </div>
+
+          {/* body-level copy that is the only thing visible when printing */}
+          <PrintSheet>
+            <div className="p-12">
+              <LetterHead data={data} />
+              <div className="whitespace-pre-wrap text-[14px] leading-relaxed text-slate-700">
+                {letter}
+              </div>
+            </div>
+          </PrintSheet>
         </div>
       </div>
     </main>

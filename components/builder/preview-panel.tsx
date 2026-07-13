@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react'
 import { ResumeDocument } from '@/components/resume/resume-document'
+import { PrintSheet } from '@/components/print-sheet'
 import {
   SAMPLE_DATA,
   THEMES,
@@ -56,7 +57,7 @@ export function PreviewPanel({ data, template, theme, settings }: Props) {
 
       <div className="scroll-thin flex-1 overflow-auto p-4 sm:p-8">
         <div className="mx-auto w-full max-w-[820px]">
-          <div className="print-area overflow-hidden rounded-xl bg-white shadow-2xl ring-1 ring-black/5">
+          <div className="overflow-hidden rounded-xl bg-white shadow-2xl ring-1 ring-black/5">
             <ResumeDocument
               data={rendered}
               template={template}
@@ -66,6 +67,16 @@ export function PreviewPanel({ data, template, theme, settings }: Props) {
           </div>
         </div>
       </div>
+
+      {/* body-level copy that is the only thing visible when printing */}
+      <PrintSheet>
+        <ResumeDocument
+          data={rendered}
+          template={template}
+          theme={accent}
+          settings={settings}
+        />
+      </PrintSheet>
     </div>
   )
 }

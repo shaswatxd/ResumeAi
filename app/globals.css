@@ -102,7 +102,12 @@
   }
 }
 
-/* Print: only the resume sheet is shown, in clean paper form */
+/* Print: a body-level .print-sheet copy is the only thing that prints.
+   On screen it is display:none; in print everything else is display:none. */
+.print-sheet {
+  display: none;
+}
+
 @media print {
   @page {
     margin: 0;
@@ -114,31 +119,19 @@
     overflow: visible !important;
     background: #fff !important;
   }
-  /* hide the whole app chrome; reveal only the sheet */
-  body * {
-    visibility: hidden;
+  /* only pages that provide a print sheet hide the rest of the app */
+  body:has(> .print-sheet) > *:not(.print-sheet) {
+    display: none !important;
   }
-  .print-area,
-  .print-area * {
-    visibility: visible;
+  .print-sheet {
+    display: block !important;
+    width: 100%;
+  }
+  .print-sheet * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
   .no-print {
     display: none !important;
-  }
-  .print-area {
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100% !important;
-    max-width: none !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    overflow: visible !important;
-  }
-  .print-area * {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
   }
 }
