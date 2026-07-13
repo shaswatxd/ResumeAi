@@ -25,6 +25,7 @@ function isEmpty(d: ResumeData) {
     !d.fullName &&
     !d.role &&
     !d.summary &&
+    !d.photo &&
     d.experience.length === 0 &&
     d.education.length === 0 &&
     d.skills.length === 0
