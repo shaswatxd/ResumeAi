@@ -97,7 +97,7 @@ export function BuilderShell() {
   }
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden">
+    <div className="flex h-dvh flex-col overflow-hidden print:h-auto print:overflow-visible">
       {/* Top bar */}
       <header className="no-print z-30 flex h-16 shrink-0 items-center justify-between gap-3 border-b border-border bg-popover/80 px-4 backdrop-blur">
         <div className="flex items-center gap-2">

@@ -108,21 +108,34 @@
     margin: 0;
     size: A4;
   }
+  html,
   body {
+    height: auto !important;
+    overflow: visible !important;
     background: #fff !important;
+  }
+  /* hide the whole app chrome; reveal only the sheet */
+  body * {
+    visibility: hidden;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible;
   }
   .no-print {
     display: none !important;
   }
   .print-area {
     position: absolute !important;
-    inset: 0 !important;
+    left: 0 !important;
+    top: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
     max-width: none !important;
     box-shadow: none !important;
     border-radius: 0 !important;
+    overflow: visible !important;
   }
   .print-area * {
     -webkit-print-color-adjust: exact !important;
