@@ -250,7 +250,13 @@ export function BuilderShell() {
         onTheme={setTheme}
         onSettings={setSettings}
       />
-      <AiPanel open={aiOpen} onClose={() => setAiOpen(false)} resume={data} />
+      <AiPanel
+        open={aiOpen}
+        onClose={() => setAiOpen(false)}
+        resume={data}
+        onApplyData={setData}
+        onApplyTemplate={setTemplate}
+      />
       <AtsPanel open={atsOpen} onClose={() => setAtsOpen(false)} resume={data} />
     </div>
   )

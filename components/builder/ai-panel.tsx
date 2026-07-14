@@ -1,11 +1,17 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { Sparkles, X, Send, Wand2 } from 'lucide-react'
+import { Sparkles, X, Send, Wand2, WandSparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/field'
 import { cn } from '@/lib/utils'
-import type { ResumeData } from '@/lib/resume-types'
+import {
+  EMPTY_DATA,
+  TEMPLATES,
+  uid,
+  type ResumeData,
+  type TemplateId,
+} from '@/lib/resume-types'
 
 type Message = { role: 'user' | 'ai'; text: string }
 
@@ -16,23 +22,72 @@ const SUGGESTIONS = [
   'Tailor my resume for a PM role',
 ]
 
+type BuiltResume = {
+  templateId: TemplateId
+  templateReason: string
+  resume: {
+    fullName: string
+    role: string
+    email: string
+    phone: string
+    location: string
+    linkedin: string
+    github: string
+    website: string
+    summary: string
+    skills: string[]
+    achievements: string[]
+    interests: string[]
+    experience: { role: string; company: string; start: string; end: string; bullets: string[] }[]
+    education: { degree: string; school: string; start: string; end: string; detail: string }[]
+    projects: { name: string; link: string; tech: string; description: string }[]
+  }
+}
+
+function toResumeData(built: BuiltResume['resume'], previous?: ResumeData): ResumeData {
+  return {
+    ...EMPTY_DATA,
+    ...previous,
+    fullName: built.fullName || previous?.fullName || '',
+    role: built.role || previous?.role || '',
+    email: built.email || previous?.email || '',
+    phone: built.phone || previous?.phone || '',
+    location: built.location || previous?.location || '',
+    linkedin: built.linkedin || previous?.linkedin || '',
+    github: built.github || previous?.github || '',
+    website: built.website || previous?.website || '',
+    summary: built.summary || previous?.summary || '',
+    skills: built.skills?.length ? built.skills : previous?.skills ?? [],
+    achievements: built.achievements?.length ? built.achievements : previous?.achievements ?? [],
+    interests: built.interests?.length ? built.interests : previous?.interests ?? [],
+    experience: built.experience.map((e) => ({ id: uid('exp'), ...e })),
+    education: built.education.map((e) => ({ id: uid('edu'), ...e })),
+    projects: built.projects.map((p) => ({ id: uid('prj'), ...p })),
+  }
+}
+
 export function AiPanel({
   open,
   onClose,
   resume,
+  onApplyData,
+  onApplyTemplate,
 }: {
   open: boolean
   onClose: () => void
   resume?: ResumeData
+  onApplyData?: (data: ResumeData) => void
+  onApplyTemplate?: (id: TemplateId) => void
 }) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'ai',
-      text: "Hi! I'm your resume assistant. Ask me to sharpen your summary, rewrite bullet points, or tailor your resume to a role.",
+      text: "Hi! I'm your resume assistant. Describe yourself and I can build your whole resume and pick a template, or ask me to sharpen your summary, rewrite bullet points, or tailor your resume to a role.",
     },
   ])
   const [input, setInput] = useState('')
   const [thinking, setThinking] = useState(false)
+  const [building, setBuilding] = useState(false)
   const listRef = useRef<HTMLDivElement>(null)
 
   const scrollDown = () =>
@@ -85,6 +140,62 @@ export function AiPanel({
       ])
     } finally {
       setThinking(false)
+      scrollDown()
+    }
+  }
+
+  const buildResume = async (text: string) => {
+    const value = text.trim()
+    if (!value || building) return
+    setMessages((m) => [...m, { role: 'user', text: value }])
+    setInput('')
+    setBuilding(true)
+    scrollDown()
+
+    try {
+      const res = await fetch('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'build',
+          prompt: value,
+          context: resume
+            ? {
+                name: resume.fullName,
+                role: resume.role,
+                skills: resume.skills,
+                summary: resume.summary,
+              }
+            : undefined,
+        }),
+      })
+      const data = await res.json()
+      if (data.error || !data.resume) {
+        setMessages((m) => [
+          ...m,
+          { role: 'ai', text: data.error ?? 'Could not build a resume from that. Try adding more detail.' },
+        ])
+        return
+      }
+      const built = data as BuiltResume
+      onApplyData?.(toResumeData(built.resume, resume))
+      if (built.templateId) onApplyTemplate?.(built.templateId)
+      const templateName =
+        TEMPLATES.find((t) => t.id === built.templateId)?.name ?? built.templateId
+      setMessages((m) => [
+        ...m,
+        {
+          role: 'ai',
+          text: `Built your resume and applied the "${templateName}" template. ${built.templateReason ?? ''}`.trim(),
+        },
+      ])
+    } catch {
+      setMessages((m) => [
+        ...m,
+        { role: 'ai', text: 'Network error — please try again.' },
+      ])
+    } finally {
+      setBuilding(false)
       scrollDown()
     }
   }
@@ -143,7 +254,7 @@ export function AiPanel({
               </div>
             </div>
           ))}
-          {thinking && (
+          {(thinking || building) && (
             <div className="flex justify-start">
               <div className="flex items-center gap-1 rounded-2xl rounded-bl-sm bg-secondary/60 px-4 py-3">
                 <Dot /> <Dot delay="150ms" /> <Dot delay="300ms" />
@@ -165,10 +276,15 @@ export function AiPanel({
               </button>
             ))}
           </div>
+          <p className="mb-2 text-[11px] text-muted-foreground">
+            Describe yourself (role, experience, skills) and hit{' '}
+            <span className="font-medium text-foreground">Build</span> to
+            generate a full resume and pick a matching template.
+          </p>
           <div className="flex items-end gap-2">
             <Textarea
               className="max-h-32 min-h-[44px] resize-none"
-              placeholder="Ask the AI anything about your resume..."
+              placeholder="Ask the AI anything, or describe yourself and click Build..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
@@ -185,9 +301,20 @@ export function AiPanel({
             />
             <Button
               size="icon-lg"
+              variant="outline"
+              className="size-11 shrink-0 border-primary/40 text-primary hover:bg-primary/10"
+              onClick={() => buildResume(input)}
+              disabled={!input.trim() || thinking || building}
+              aria-label="Build resume from description"
+              title="Build resume & pick template"
+            >
+              <WandSparkles className="size-4" />
+            </Button>
+            <Button
+              size="icon-lg"
               className="size-11 shrink-0"
               onClick={() => send(input)}
-              disabled={!input.trim() || thinking}
+              disabled={!input.trim() || thinking || building}
               aria-label="Send"
             >
               <Send className="size-4" />

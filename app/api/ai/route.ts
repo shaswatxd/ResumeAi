@@ -2,6 +2,7 @@ import { generateText, type LanguageModel } from 'ai'
 import { createGroq } from '@ai-sdk/groq'
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { createCerebras } from '@ai-sdk/cerebras'
+import { TEMPLATES } from '@/lib/resume-types'
 
 export const maxDuration = 60
 
@@ -43,8 +44,29 @@ async function generate(opts: { system: string; prompt: string }) {
   throw lastErr ?? new Error('No AI provider available')
 }
 
+function extractJson(text: string): unknown {
+  const cleaned = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '')
+  const start = cleaned.indexOf('{')
+  const end = cleaned.lastIndexOf('}')
+  const slice = start !== -1 && end !== -1 ? cleaned.slice(start, end + 1) : cleaned
+  return JSON.parse(slice)
+}
+
+const RESUME_JSON_SHAPE = `{
+  "templateId": "<one of: ${TEMPLATES.map((t) => t.id).join(', ')}>",
+  "templateReason": "<one short sentence why this template fits>",
+  "resume": {
+    "fullName": "", "role": "", "email": "", "phone": "", "location": "",
+    "linkedin": "", "github": "", "website": "", "summary": "",
+    "skills": ["..."], "achievements": ["..."], "interests": ["..."],
+    "experience": [{ "role": "", "company": "", "start": "", "end": "", "bullets": ["..."] }],
+    "education": [{ "degree": "", "school": "", "start": "", "end": "", "detail": "" }],
+    "projects": [{ "name": "", "link": "", "tech": "", "description": "" }]
+  }
+}`
+
 type Body = {
-  action: 'chat' | 'summary' | 'bullets' | 'skills' | 'ats' | 'cover' | 'tailor'
+  action: 'chat' | 'summary' | 'bullets' | 'skills' | 'ats' | 'cover' | 'tailor' | 'build'
   prompt?: string
   history?: { role: 'user' | 'ai'; text: string }[]
   jobDescription?: string
@@ -174,6 +196,52 @@ export async function POST(req: Request) {
           .join('\n\n'),
       })
       return Response.json({ text: text.trim() })
+    }
+
+    if (action === 'build') {
+      const templateList = TEMPLATES.map(
+        (t) => `${t.id}: ${t.name} — ${t.description}`,
+      ).join('\n')
+      const text = await generate({
+        system:
+          'You are an expert resume writer and career coach. Build a complete, realistic, ATS-friendly resume from the description the user gives you (their background, role, experience, education). Invent plausible specific details (dates, metrics, bullet points) only to fill unavoidable gaps — never contradict facts the user stated. Write 3-5 strong achievement bullets per role. Then pick the single best-fitting resume template from the provided list for this candidate\'s field and seniority, and explain why in one sentence. Respond with ONLY raw JSON matching this exact shape, no markdown fences, no commentary:\n' +
+          RESUME_JSON_SHAPE,
+        prompt: [
+          `Candidate description:\n${prompt}`,
+          context ? `Existing resume data to build on / preserve where relevant:\n${resumeContext(context)}` : '',
+          `Available templates:\n${templateList}`,
+        ]
+          .filter(Boolean)
+          .join('\n\n'),
+      })
+
+      let parsed: {
+        templateId?: string
+        templateReason?: string
+        resume?: Record<string, unknown>
+      }
+      try {
+        parsed = extractJson(text) as typeof parsed
+      } catch {
+        return Response.json(
+          { error: 'AI returned an unreadable resume. Please try again.' },
+          { status: 500 },
+        )
+      }
+      if (!parsed.resume) {
+        return Response.json(
+          { error: 'AI response was missing resume data. Please try again.' },
+          { status: 500 },
+        )
+      }
+      const templateId = TEMPLATES.some((t) => t.id === parsed.templateId)
+        ? parsed.templateId
+        : 'classic'
+      return Response.json({
+        templateId,
+        templateReason: parsed.templateReason ?? '',
+        resume: parsed.resume,
+      })
     }
 
     // chat
