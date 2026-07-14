@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { Sparkles, X, Send, Wand2, WandSparkles } from 'lucide-react'
+import { Sparkles, X, Send, Wand2, WandSparkles, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/field'
 import { cn } from '@/lib/utils'
@@ -21,6 +21,11 @@ const SUGGESTIONS = [
   'Turn my duties into achievements',
   'Tailor my resume for a PM role',
 ]
+
+const LIVE_PREVIEW_BTN = {
+  label: 'Live Preview',
+  icon: Eye,
+}
 
 type BuiltResume = {
   templateId: TemplateId
@@ -264,6 +269,15 @@ export function AiPanel({
         </div>
 
         <div className="border-t border-border p-4">
+          <div className="mb-3">
+            <button
+              onClick={onClose}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-3 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-primary/20"
+            >
+              <Eye className="size-4" />
+              {LIVE_PREVIEW_BTN.label}
+            </button>
+          </div>
           <div className="mb-3 flex flex-wrap gap-2">
             {SUGGESTIONS.map((s) => (
               <button

@@ -103,10 +103,10 @@ export function BuilderShell() {
         <div className="flex items-center gap-2">
           <Link
             href="/"
-            className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground"
+            className="group relative flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground"
             aria-label="ResumeAI home"
           >
-            <FileText className="size-5" />
+            <FileText className="size-5 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" />
           </Link>
           <div className="hidden sm:block">
             <p className="text-sm font-semibold leading-none">ResumeAI</p>
@@ -163,12 +163,6 @@ export function BuilderShell() {
                     label="Import JSON"
                     onClick={() => importRef.current?.click()}
                   />
-                  <MenuItem
-                    icon={RotateCcw}
-                    label="Reset everything"
-                    destructive
-                    onClick={handleReset}
-                  />
                 </div>
               </>
             )}
@@ -180,6 +174,16 @@ export function BuilderShell() {
               onChange={handleImport}
             />
           </div>
+          <Button
+            variant="ghost"
+            size="lg"
+            className="h-10 px-3 text-destructive hover:bg-destructive/10 hover:text-destructive"
+            onClick={handleReset}
+            aria-label="Reset everything"
+          >
+            <RotateCcw className="size-4" />
+            <span className="hidden sm:inline">Reset</span>
+          </Button>
           <Button
             variant="outline"
             size="lg"
