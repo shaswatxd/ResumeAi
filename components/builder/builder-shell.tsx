@@ -18,7 +18,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { EditorPanel } from '@/components/builder/editor-panel'
 import { PreviewPanel } from '@/components/builder/preview-panel'
-import { TemplateDrawer } from '@/components/builder/template-drawer'
+import { DesignPanel } from '@/components/builder/design-panel'
 import { AiPanel } from '@/components/builder/ai-panel'
 import { AtsPanel } from '@/components/builder/ats-panel'
 import { useResumeStore } from '@/hooks/use-resume-store'
@@ -30,12 +30,12 @@ export function BuilderShell() {
     data,
     template,
     theme,
-    settings,
+    design,
     hydrated,
     setData,
     setTemplate,
     setTheme,
-    setSettings,
+    setDesign,
     reset,
   } = useResumeStore()
 
@@ -239,20 +239,23 @@ export function BuilderShell() {
             data={data}
             template={template}
             theme={theme}
-            settings={settings}
+            design={design}
+            onChange={setData}
           />
         </section>
       </div>
 
-      <TemplateDrawer
+      <DesignPanel
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
+        data={data}
         template={template}
         theme={theme}
-        settings={settings}
+        design={design}
         onTemplate={setTemplate}
         onTheme={setTheme}
-        onSettings={setSettings}
+        onDesign={setDesign}
+        onData={setData}
       />
       <AiPanel
         open={aiOpen}

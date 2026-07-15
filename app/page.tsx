@@ -111,13 +111,13 @@ const FAQS = [
   },
 ]
 
-const SHOWCASE = ['glass', 'sidebar', 'executive'] as const
+const SHOWCASE = ['modern', 'two-column', 'executive'] as const
 
 export default function Page() {
-  const violet = THEMES[0]
-  const emerald = THEMES[1]
-  const blue = THEMES[2]
-  const showcaseThemes = [violet, emerald, blue]
+  const blue = THEMES[0]
+  const purple = THEMES[1]
+  const green = THEMES[2]
+  const showcaseThemes = [blue, purple, green]
 
   return (
     <main className="relative min-h-dvh overflow-hidden">

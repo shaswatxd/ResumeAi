@@ -135,3 +135,34 @@
     display: none !important;
   }
 }
+
+/* Resume document dark mode: a per-resume toggle from the design panel,
+   independent of the site-wide .dark class — scoped to [data-mode="dark"]
+   so it only ever affects the resume paper itself. Templates/blocks are
+   authored against the standard Tailwind slate palette, so overriding
+   those utility classes here gives every template dark-mode support
+   without per-template rework. */
+.resume-page[data-mode='dark'] {
+  color-scheme: dark;
+}
+.resume-page[data-mode='dark'] .text-slate-900,
+.resume-page[data-mode='dark'] .text-slate-800 {
+  color: #f1f5f9 !important;
+}
+.resume-page[data-mode='dark'] .text-slate-700 {
+  color: #e2e8f0 !important;
+}
+.resume-page[data-mode='dark'] .text-slate-600 {
+  color: #cbd5e1 !important;
+}
+.resume-page[data-mode='dark'] .text-slate-500 {
+  color: #94a3b8 !important;
+}
+.resume-page[data-mode='dark'] .text-slate-400,
+.resume-page[data-mode='dark'] .text-slate-300 {
+  color: #64748b !important;
+}
+.resume-page[data-mode='dark'] .border-slate-200,
+.resume-page[data-mode='dark'] .border-slate-300 {
+  border-color: #334155 !important;
+}

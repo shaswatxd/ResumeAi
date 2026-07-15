@@ -1,12 +1,13 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { ResumeDocument } from '@/components/resume/resume-document'
 import { PrintSheet } from '@/components/print-sheet'
+import { PhotoEditor } from '@/components/builder/photo-editor'
 import {
   SAMPLE_DATA,
   THEMES,
-  type DocSettings,
+  type DesignSettings,
   type ResumeData,
   type TemplateId,
   type ThemeId,
@@ -16,7 +17,8 @@ type Props = {
   data: ResumeData
   template: TemplateId
   theme: ThemeId
-  settings?: DocSettings
+  design: DesignSettings
+  onChange: (updater: ResumeData | ((prev: ResumeData) => ResumeData)) => void
 }
 
 /* If everything is empty, show the sample so the preview is never blank */
@@ -32,11 +34,9 @@ function isEmpty(d: ResumeData) {
   )
 }
 
-export function PreviewPanel({ data, template, theme, settings }: Props) {
-  const accent = useMemo(
-    () => THEMES.find((t) => t.id === theme) ?? THEMES[0],
-    [theme],
-  )
+export function PreviewPanel({ data, template, theme, design, onChange }: Props) {
+  const accent = useMemo(() => THEMES.find((t) => t.id === theme) ?? THEMES[0], [theme])
+  const [photoEditorOpen, setPhotoEditorOpen] = useState(false)
   const showSample = isEmpty(data)
   const rendered = showSample ? SAMPLE_DATA : data
 
@@ -53,7 +53,9 @@ export function PreviewPanel({ data, template, theme, settings }: Props) {
             </span>
           )}
         </div>
-        <span className="text-xs text-muted-foreground">A4 · {accent.name}</span>
+        <span className="text-xs text-muted-foreground">
+          {design.pageSize.toUpperCase()} · {accent.name}
+        </span>
       </div>
 
       <div className="scroll-thin flex-1 overflow-auto p-4 sm:p-8">
@@ -63,7 +65,10 @@ export function PreviewPanel({ data, template, theme, settings }: Props) {
               data={rendered}
               template={template}
               theme={accent}
-              settings={settings}
+              design={design}
+              isEditable={!showSample}
+              onChange={onChange}
+              openPhotoEditor={() => setPhotoEditorOpen(true)}
             />
           </div>
         </div>
@@ -71,13 +76,16 @@ export function PreviewPanel({ data, template, theme, settings }: Props) {
 
       {/* body-level copy that is the only thing visible when printing */}
       <PrintSheet>
-        <ResumeDocument
-          data={rendered}
-          template={template}
-          theme={accent}
-          settings={settings}
-        />
+        <ResumeDocument data={rendered} template={template} theme={accent} design={design} />
       </PrintSheet>
+
+      <PhotoEditor
+        open={photoEditorOpen}
+        onClose={() => setPhotoEditorOpen(false)}
+        photo={data.photo}
+        onSave={(photo) => onChange((d) => ({ ...d, photo }))}
+        onRemove={() => onChange((d) => ({ ...d, photo: '' }))}
+      />
     </div>
   )
 }

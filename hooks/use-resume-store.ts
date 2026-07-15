@@ -2,28 +2,28 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import {
-  DEFAULT_SETTINGS,
+  DEFAULT_DESIGN_SETTINGS,
   EMPTY_DATA,
-  type DocSettings,
+  type DesignSettings,
   type ResumeData,
   type TemplateId,
   type ThemeId,
 } from '@/lib/resume-types'
 
-const STORAGE_KEY = 'resumeai:v1'
+const STORAGE_KEY = 'resumeai:v2'
 
 type StoredState = {
   data: ResumeData
   template: TemplateId
   theme: ThemeId
-  settings: DocSettings
+  design: DesignSettings
 }
 
 const DEFAULT_STATE: StoredState = {
   data: EMPTY_DATA,
-  template: 'glass',
-  theme: 'violet',
-  settings: DEFAULT_SETTINGS,
+  template: 'classic',
+  theme: 'blue',
+  design: DEFAULT_DESIGN_SETTINGS,
 }
 
 export function useResumeStore() {
@@ -36,10 +36,15 @@ export function useResumeStore() {
       if (raw) {
         const parsed = JSON.parse(raw) as Partial<StoredState>
         setState({
-          data: { ...EMPTY_DATA, ...parsed.data },
-          template: parsed.template ?? 'glass',
-          theme: parsed.theme ?? 'violet',
-          settings: { ...DEFAULT_SETTINGS, ...parsed.settings },
+          data: { ...EMPTY_DATA, ...parsed.data, customSections: parsed.data?.customSections ?? [] },
+          template: parsed.template ?? 'classic',
+          theme: parsed.theme ?? 'blue',
+          design: {
+            ...DEFAULT_DESIGN_SETTINGS,
+            ...parsed.design,
+            sectionVisibility: { ...parsed.design?.sectionVisibility },
+            sectionOrder: parsed.design?.sectionOrder ?? DEFAULT_DESIGN_SETTINGS.sectionOrder,
+          },
         })
       }
     } catch {
@@ -78,8 +83,8 @@ export function useResumeStore() {
     setState((prev) => ({ ...prev, theme }))
   }, [])
 
-  const setSettings = useCallback((patch: Partial<DocSettings>) => {
-    setState((prev) => ({ ...prev, settings: { ...prev.settings, ...patch } }))
+  const setDesign = useCallback((patch: Partial<DesignSettings>) => {
+    setState((prev) => ({ ...prev, design: { ...prev.design, ...patch } }))
   }, [])
 
   const reset = useCallback(() => {
@@ -90,12 +95,12 @@ export function useResumeStore() {
     data: state.data,
     template: state.template,
     theme: state.theme,
-    settings: state.settings,
+    design: state.design,
     hydrated,
     setData,
     setTemplate,
     setTheme,
-    setSettings,
+    setDesign,
     reset,
   }
 }
