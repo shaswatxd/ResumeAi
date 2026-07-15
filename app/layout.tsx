@@ -66,7 +66,7 @@ export const metadata: Metadata = {
     template: '%s · ResumeAI',
   },
   description:
-    'Build a standout resume in minutes: 20 premium templates, real AI writing help, ATS score with job-description matching, AI cover letters, and one-click PDF export. Free, no sign-up.',
+    'Build a standout resume in minutes: 26 premium templates, real AI writing help, ATS score with job-description matching, AI cover letters, and one-click PDF export. Free, no sign-up.',
   keywords: [
     'resume builder',
     'AI resume',
@@ -79,7 +79,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'ResumeAI — Free AI Resume Builder with ATS Score',
     description:
-      '20 premium templates, real AI writing, ATS scoring, cover letters and one-click PDF. Free, no sign-up.',
+      '26 premium templates, real AI writing, ATS scoring, cover letters and one-click PDF. Free, no sign-up.',
     url: 'https://resumeaihai.vercel.app',
     siteName: 'ResumeAI',
     type: 'website',
@@ -88,7 +88,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'ResumeAI — Free AI Resume Builder',
     description:
-      '20 templates · Real AI writing · ATS score · Cover letters · Free PDF export',
+      '26 templates · Real AI writing · ATS score · Cover letters · Free PDF export',
   },
 }
 

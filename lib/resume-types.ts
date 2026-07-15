@@ -105,6 +105,12 @@ export type TemplateId =
   | 'luxury'
   | 'classic'
   | 'international'
+  | 'infographic'
+  | 'photo-frame'
+  | 'geometric'
+  | 'monogram'
+  | 'magazine'
+  | 'pastel'
 
 export type Template = {
   id: TemplateId
@@ -135,6 +141,12 @@ export const TEMPLATES: Template[] = [
   { id: 'luxury', name: 'Luxury Gold', category: 'Luxury', description: 'Deep tones with a gold hairline accent' },
   { id: 'classic', name: 'Classic Heritage', category: 'Classic', description: 'Timeless serif, ATS-friendly', tag: 'ATS' },
   { id: 'international', name: 'Global Standard', category: 'International', description: 'Neutral Europass-style, photo-friendly' },
+  { id: 'infographic', name: 'Infographic Pro', category: 'Infographic', description: 'Visual skill meters and stat-driven layout', tag: 'New' },
+  { id: 'photo-frame', name: 'Photo Frame', category: 'Photo', description: 'Large portrait hero, photo-forward design', tag: 'New' },
+  { id: 'geometric', name: 'Geometric Pop', category: 'Colorful', description: 'Bold multi-color shapes, playful energy', tag: 'New' },
+  { id: 'monogram', name: 'Monogram Crest', category: 'Creative', description: 'Circular initials crest as the centerpiece', tag: 'New' },
+  { id: 'magazine', name: 'Magazine Column', category: 'Editorial', description: 'Newsroom-style masthead, multi-column body', tag: 'New' },
+  { id: 'pastel', name: 'Pastel Bloom', category: 'Colorful', description: 'Soft pastel tones, gentle rounded shapes', tag: 'New' },
 ]
 
 export const TEMPLATE_CATEGORIES: string[] = Array.from(

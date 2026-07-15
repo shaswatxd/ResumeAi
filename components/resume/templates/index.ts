@@ -20,6 +20,12 @@ import { CompactTemplate } from './compact'
 import { LuxuryTemplate } from './luxury'
 import { ClassicTemplate } from './classic'
 import { InternationalTemplate } from './international'
+import { InfographicTemplate } from './infographic'
+import { PhotoFrameTemplate } from './photo-frame'
+import { GeometricTemplate } from './geometric'
+import { MonogramTemplate } from './monogram'
+import { MagazineTemplate } from './magazine'
+import { PastelTemplate } from './pastel'
 
 export const TEMPLATE_REGISTRY: Record<TemplateId, (p: TP) => React.ReactNode> = {
   'ats-pro': AtsProTemplate,
@@ -42,4 +48,10 @@ export const TEMPLATE_REGISTRY: Record<TemplateId, (p: TP) => React.ReactNode> =
   luxury: LuxuryTemplate,
   classic: ClassicTemplate,
   international: InternationalTemplate,
+  infographic: InfographicTemplate,
+  'photo-frame': PhotoFrameTemplate,
+  geometric: GeometricTemplate,
+  monogram: MonogramTemplate,
+  magazine: MagazineTemplate,
+  pastel: PastelTemplate,
 }
