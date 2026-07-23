@@ -90,27 +90,21 @@ export type TemplateId =
   | 'corporate'
   | 'minimal'
   | 'elegant'
-  | 'executive'
-  | 'creative'
   | 'designer'
   | 'developer'
   | 'student'
-  | 'fresher'
   | 'business'
   | 'marketing'
   | 'dark-theme'
-  | 'two-column'
-  | 'single-column'
-  | 'compact'
   | 'luxury'
   | 'classic'
-  | 'international'
-  | 'infographic'
-  | 'photo-frame'
-  | 'geometric'
-  | 'monogram'
-  | 'magazine'
-  | 'pastel'
+  | 'canva-emerald'
+  | 'canva-creative'
+  | 'canva-executive'
+  | 'canva-coral'
+  | 'canva-gradient'
+  | 'canva-obsidian'
+  | 'canva-infographic'
 
 export type Template = {
   id: TemplateId
@@ -121,32 +115,26 @@ export type Template = {
 }
 
 export const TEMPLATES: Template[] = [
+  { id: 'luxury', name: 'Luxury Gold', category: 'Luxury', description: 'Deep tones with a gold hairline accent', tag: 'Featured' },
+  { id: 'canva-emerald', name: 'Emerald Suite', category: 'Creative', description: 'Emerald gradient sidebar, rounded avatars & pill tags', tag: 'Featured' },
+  { id: 'canva-coral', name: 'Coral Luxe', category: 'Modern', description: 'Warm coral/rose rounded card containers & modern icons', tag: 'Featured' },
   { id: 'ats-pro', name: 'ATS Pro', category: 'ATS Professional', description: 'Pure single-column, parser-safe, zero graphics', tag: 'ATS' },
   { id: 'modern', name: 'Modern Edge', category: 'Modern', description: 'Crisp geometric header with accent underline' },
   { id: 'corporate', name: 'Corporate Suite', category: 'Corporate', description: 'Structured two-tone header, boardroom-ready' },
   { id: 'minimal', name: 'Pure Minimal', category: 'Minimal', description: 'Generous whitespace, quiet typography', tag: 'ATS' },
   { id: 'elegant', name: 'Elegant Serif', category: 'Elegant', description: 'Centered serif name, thin hairline rules' },
-  { id: 'executive', name: 'Executive Summit', category: 'Executive', description: 'Refined serif for senior leadership roles' },
-  { id: 'creative', name: 'Creative Burst', category: 'Creative', description: 'Bold color block header, playful accents' },
+  { id: 'canva-executive', name: 'Executive Prime', category: 'Executive', description: 'Regal navy & gold hairline serif leadership layout', tag: 'Pro' },
+  { id: 'canva-creative', name: 'Vibrant Studio', category: 'Creative', description: 'Vibrant color block layout with floating avatar card', tag: 'Pro' },
   { id: 'designer', name: 'Designer Grid', category: 'Designer', description: 'Portfolio-style grid with photo showcase' },
   { id: 'developer', name: 'Dev Terminal', category: 'Developer', description: 'Monospace, terminal-inspired dev layout', tag: 'Dev' },
   { id: 'student', name: 'Student Rise', category: 'Student', description: 'Education-first layout for students' },
-  { id: 'fresher', name: 'Fresh Start', category: 'Fresher', description: 'Approachable layout for first jobs' },
   { id: 'business', name: 'Business Slate', category: 'Business', description: 'Slate sidebar, confident business tone' },
   { id: 'marketing', name: 'Marketing Pulse', category: 'Marketing', description: 'Punchy stats-forward marketing layout' },
   { id: 'dark-theme', name: 'Midnight Pro', category: 'Dark Theme', description: 'Deep dark paper with glowing accent', tag: 'New' },
-  { id: 'two-column', name: 'Dual Column', category: 'Two Column', description: 'Balanced two-column with accent rail' },
-  { id: 'single-column', name: 'Streamline', category: 'Single Column', description: 'Clean single flowing column', tag: 'ATS' },
-  { id: 'compact', name: 'Compact Fit', category: 'Compact', description: 'Dense layout, fits more on one page', tag: 'ATS' },
-  { id: 'luxury', name: 'Luxury Gold', category: 'Luxury', description: 'Deep tones with a gold hairline accent' },
   { id: 'classic', name: 'Classic Heritage', category: 'Classic', description: 'Timeless serif, ATS-friendly', tag: 'ATS' },
-  { id: 'international', name: 'Global Standard', category: 'International', description: 'Neutral Europass-style, photo-friendly' },
-  { id: 'infographic', name: 'Infographic Pro', category: 'Infographic', description: 'Visual skill meters and stat-driven layout', tag: 'New' },
-  { id: 'photo-frame', name: 'Photo Frame', category: 'Photo', description: 'Large portrait hero, photo-forward design', tag: 'New' },
-  { id: 'geometric', name: 'Geometric Pop', category: 'Colorful', description: 'Bold multi-color shapes, playful energy', tag: 'New' },
-  { id: 'monogram', name: 'Monogram Crest', category: 'Creative', description: 'Circular initials crest as the centerpiece', tag: 'New' },
-  { id: 'magazine', name: 'Magazine Column', category: 'Editorial', description: 'Newsroom-style masthead, multi-column body', tag: 'New' },
-  { id: 'pastel', name: 'Pastel Bloom', category: 'Colorful', description: 'Soft pastel tones, gentle rounded shapes', tag: 'New' },
+  { id: 'canva-gradient', name: 'Gradient Edge', category: 'Modern', description: 'Dynamic gradient header banner with experience timeline dots', tag: 'Pro' },
+  { id: 'canva-obsidian', name: 'Obsidian Dark', category: 'Dark Theme', description: 'Charcoal paper background with neon accent text & glassy cards', tag: 'Pro' },
+  { id: 'canva-infographic', name: 'Infographic Spark', category: 'Infographic', description: 'Visual stat cards, highlighted strength badges & progress bars', tag: 'Pro' },
 ]
 
 export const TEMPLATE_CATEGORIES: string[] = Array.from(
@@ -281,14 +269,14 @@ export function isSectionVisible(design: DesignSettings, id: SectionId) {
 /* -------------------------------- data ---------------------------------- */
 
 export const SAMPLE_DATA: ResumeData = {
-  fullName: 'Aarav Mehta',
+  fullName: 'Digvijay Singh',
   role: 'Senior Full-Stack Developer',
-  email: 'aarav.mehta@gmail.com',
+  email: 'digvijay.singh@gmail.com',
   phone: '+91 98765 43210',
   location: 'Bengaluru, India',
-  linkedin: 'linkedin.com/in/aaravmehta',
-  github: 'github.com/aaravmehta',
-  website: 'aarav.dev',
+  linkedin: 'linkedin.com/in/digvijaysingh',
+  github: 'github.com/digvijaysingh',
+  website: 'digvijay.dev',
   photo: '',
   summary:
     'Full-stack developer with 6+ years of experience building scalable web products for fintech and SaaS companies. Led a 5-engineer team that shipped a payments platform processing 2M+ transactions daily. Passionate about clean architecture, developer experience, and measurable business impact.',
@@ -343,7 +331,7 @@ export const SAMPLE_DATA: ResumeData = {
     {
       id: 'prj-1',
       name: 'OpenLedger',
-      link: 'github.com/aaravmehta/openledger',
+      link: 'github.com/digvijaysingh/openledger',
       tech: 'Go, PostgreSQL, Kafka',
       description:
         'Open-source double-entry ledger library used by 3 fintech startups; 1.2k GitHub stars.',
@@ -351,7 +339,7 @@ export const SAMPLE_DATA: ResumeData = {
     {
       id: 'prj-2',
       name: 'DevMetrics',
-      link: 'devmetrics.aarav.dev',
+      link: 'devmetrics.digvijay.dev',
       tech: 'Next.js, tRPC, ClickHouse',
       description:
         'Engineering analytics dashboard tracking DORA metrics for 40+ teams.',

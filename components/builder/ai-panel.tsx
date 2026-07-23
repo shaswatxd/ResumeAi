@@ -77,12 +77,14 @@ export function AiPanel({
   resume,
   onApplyData,
   onApplyTemplate,
+  onLivePreview,
 }: {
   open: boolean
   onClose: () => void
   resume?: ResumeData
   onApplyData?: (data: ResumeData) => void
   onApplyTemplate?: (id: TemplateId) => void
+  onLivePreview?: () => void
 }) {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -271,7 +273,10 @@ export function AiPanel({
         <div className="border-t border-border p-4">
           <div className="mb-3">
             <button
-              onClick={onClose}
+              onClick={() => {
+                onClose()
+                onLivePreview?.()
+              }}
               className="flex w-full items-center justify-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-3 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-primary/20"
             >
               <Eye className="size-4" />

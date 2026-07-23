@@ -66,7 +66,7 @@ const RESUME_JSON_SHAPE = `{
 }`
 
 type Body = {
-  action: 'chat' | 'summary' | 'bullets' | 'skills' | 'ats' | 'cover' | 'tailor' | 'build'
+  action: 'chat' | 'summary' | 'bullets' | 'skills' | 'ats' | 'cover' | 'tailor' | 'build' | 'enhance-all'
   prompt?: string
   history?: { role: 'user' | 'ai'; text: string }[]
   jobDescription?: string
@@ -134,6 +134,21 @@ export async function POST(req: Request) {
         prompt: `Write a professional summary for this candidate.\n\n${resumeContext(context)}`,
       })
       return Response.json({ text: text.trim() })
+    }
+
+    if (action === 'enhance-all') {
+      const text = await generate({
+        system:
+          'You are an elite executive resume writer. Enhance the candidate\'s resume in professional ENGLISH ONLY: 1) Write an impactful 3-sentence summary with strong action verbs and key skills. 2) For each experience entry, rewrite its bullets into 3-4 quantified, high-impact achievement statements starting with powerful action verbs. Respond ONLY with a raw JSON object matching this shape, no markdown fences: {"summary": "...", "experience": [{"id": "<matching exp id>", "bullets": ["bullet 1", "bullet 2"]}]}',
+        prompt: `Enhance all experience entries and summary for this candidate.\n\n${resumeContext(context)}`,
+      })
+      let parsed: { summary?: string; experience?: { id: string; bullets: string[] }[] }
+      try {
+        parsed = extractJson(text) as typeof parsed
+      } catch {
+        return Response.json({ error: 'AI response error during auto-enhance.' }, { status: 500 })
+      }
+      return Response.json({ summary: parsed.summary, experience: parsed.experience })
     }
 
     if (action === 'bullets') {
@@ -251,7 +266,7 @@ export async function POST(req: Request) {
 
     const text = await generate({
       system:
-        'You are a friendly, expert resume coach inside a resume builder app. Give specific, actionable advice. Keep replies short (2-4 sentences or a tight list). When useful, offer concrete rewrites. Never invent facts about the user beyond the context provided.',
+        'You are a friendly, expert resume coach inside a resume builder app. ALWAYS write in professional ENGLISH ONLY. Give specific, actionable advice. Keep replies short (2-4 sentences or a tight list). When useful, offer concrete rewrites. Never invent facts about the user beyond the context provided.',
       prompt: [
         context ? `Candidate context:\n${resumeContext(context)}` : '',
         convo ? `Conversation so far:\n${convo}` : '',

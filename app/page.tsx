@@ -111,7 +111,7 @@ const FAQS = [
   },
 ]
 
-const SHOWCASE = ['modern', 'two-column', 'executive'] as const
+const SHOWCASE = ['luxury', 'canva-emerald', 'canva-coral'] as const
 
 export default function Page() {
   const blue = THEMES[0]

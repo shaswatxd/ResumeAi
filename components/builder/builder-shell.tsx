@@ -14,6 +14,8 @@ import {
   MoreHorizontal,
   FileUp,
   FileDown,
+  Wand2,
+  Copy,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EditorPanel } from '@/components/builder/editor-panel'
@@ -22,7 +24,7 @@ import { DesignPanel } from '@/components/builder/design-panel'
 import { AiPanel } from '@/components/builder/ai-panel'
 import { AtsPanel } from '@/components/builder/ats-panel'
 import { useResumeStore } from '@/hooks/use-resume-store'
-import { EMPTY_DATA, type ResumeData } from '@/lib/resume-types'
+import { EMPTY_DATA, SAMPLE_DATA, type ResumeData } from '@/lib/resume-types'
 import { cn } from '@/lib/utils'
 
 export function BuilderShell() {
@@ -51,6 +53,29 @@ export function BuilderShell() {
       setData(EMPTY_DATA)
       reset()
     }
+    setMenuOpen(false)
+  }
+
+  const handleFillSample = () => {
+    setData(SAMPLE_DATA)
+    setMenuOpen(false)
+  }
+
+  const handleCopyPlainText = async () => {
+    const text = [
+      data.fullName,
+      data.role,
+      [data.email, data.phone, data.location, data.linkedin, data.github, data.website].filter(Boolean).join(' | '),
+      '',
+      data.summary ? `SUMMARY\n${data.summary}\n` : '',
+      data.experience.length ? `EXPERIENCE\n${data.experience.map((e) => `${e.role} at ${e.company} (${e.start} - ${e.end})\n${e.bullets.map((b) => `• ${b}`).join('\n')}`).join('\n\n')}\n` : '',
+      data.education.length ? `EDUCATION\n${data.education.map((e) => `${e.degree}, ${e.school} (${e.start} - ${e.end})\n${e.detail}`).join('\n')}\n` : '',
+      data.skills.length ? `SKILLS\n${data.skills.join(', ')}\n` : '',
+      data.projects.length ? `PROJECTS\n${data.projects.map((p) => `${p.name} - ${p.tech}\n${p.description}`).join('\n\n')}\n` : '',
+    ].filter(Boolean).join('\n')
+
+    await navigator.clipboard.writeText(text)
+    alert('Resume plain text copied to clipboard!')
     setMenuOpen(false)
   }
 
@@ -152,7 +177,17 @@ export function BuilderShell() {
                   onClick={() => setMenuOpen(false)}
                   aria-hidden
                 />
-                <div className="absolute right-0 top-11 z-50 w-52 overflow-hidden rounded-xl border border-border bg-popover p-1 shadow-2xl">
+                <div className="absolute right-0 top-11 z-50 w-56 overflow-hidden rounded-xl border border-border bg-popover p-1 shadow-2xl">
+                  <MenuItem
+                    icon={Wand2}
+                    label="Fill Sample Data"
+                    onClick={handleFillSample}
+                  />
+                  <MenuItem
+                    icon={Copy}
+                    label="Copy ATS Plain Text"
+                    onClick={handleCopyPlainText}
+                  />
                   <MenuItem
                     icon={FileDown}
                     label="Export JSON backup"
@@ -230,6 +265,7 @@ export function BuilderShell() {
 
         {/* Preview */}
         <section
+          id="preview-section"
           className={cn(
             'w-full flex-1 bg-background md:block',
             mobileView === 'preview' ? 'block' : 'hidden md:block',
@@ -241,6 +277,9 @@ export function BuilderShell() {
             theme={theme}
             design={design}
             onChange={setData}
+            onTheme={setTheme}
+            onTemplate={setTemplate}
+            onOpenAts={() => setAtsOpen(true)}
           />
         </section>
       </div>
@@ -263,6 +302,11 @@ export function BuilderShell() {
         resume={data}
         onApplyData={setData}
         onApplyTemplate={setTemplate}
+        onLivePreview={() => {
+          setAiOpen(false)
+          setMobileView('preview')
+          document.getElementById('preview-section')?.scrollIntoView({ behavior: 'smooth' })
+        }}
       />
       <AtsPanel open={atsOpen} onClose={() => setAtsOpen(false)} resume={data} />
     </div>

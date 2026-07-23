@@ -287,6 +287,41 @@ function DesignTab({
 }) {
   return (
     <div className="flex flex-col gap-7">
+      <Field label="Page Layout Preset">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1 text-xs gap-1 border-primary/40 text-primary hover:bg-primary/10"
+            onClick={() =>
+              onDesign({
+                fontSize: 'sm',
+                sectionSpacing: 'compact',
+                lineHeight: 'compact',
+                pageMargin: 'narrow',
+              })
+            }
+          >
+            ⚡ Fit to 1 Page
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1 text-xs text-muted-foreground"
+            onClick={() =>
+              onDesign({
+                fontSize: 'md',
+                sectionSpacing: 'normal',
+                lineHeight: 'normal',
+                pageMargin: 'normal',
+              })
+            }
+          >
+            📄 Standard Layout
+          </Button>
+        </div>
+      </Field>
+
       <Field label="Color theme">
         <div className="flex flex-wrap gap-2">
           {THEMES.map((th) => {

@@ -15,6 +15,8 @@ import {
   X,
   ArrowRight,
   ArrowLeft,
+  Loader2,
+  Wand2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input, Label, Textarea } from '@/components/ui/field'
@@ -45,14 +47,83 @@ type Props = {
 
 export function EditorPanel({ data, onChange }: Props) {
   const [tab, setTab] = useState<TabId>('personal')
+  const [enhancing, setEnhancing] = useState(false)
 
   const set = <K extends keyof ResumeData>(key: K, value: ResumeData[K]) =>
     onChange((prev) => ({ ...prev, [key]: value }))
+
+  const handleEnhanceAll = async () => {
+    setEnhancing(true)
+    try {
+      const res = await fetch('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'enhance-all',
+          context: {
+            name: data.fullName,
+            role: data.role,
+            skills: data.skills,
+            summary: data.summary,
+            experience: data.experience.map((e) => ({
+              id: e.id,
+              role: e.role,
+              company: e.company,
+              bullets: e.bullets,
+            })),
+          },
+        }),
+      })
+      const json = await res.json()
+      if (json.summary || json.experience) {
+        onChange((prev) => {
+          const newExp = prev.experience.map((exp) => {
+            const match = json.experience?.find((e: { id: string; bullets: string[] }) => e.id === exp.id)
+            return match && match.bullets?.length ? { ...exp, bullets: match.bullets } : exp
+          })
+          return {
+            ...prev,
+            summary: json.summary || prev.summary,
+            experience: newExp,
+          }
+        })
+      }
+    } catch {
+      alert('AI enhance failed — please try again.')
+    } finally {
+      setEnhancing(false)
+    }
+  }
 
   const tabIndex = TABS.findIndex((t) => t.id === tab)
 
   return (
     <div className="flex h-full flex-col">
+      {/* Top AI Action Banner */}
+      <div className="border-b border-border bg-primary/10 px-4 py-2 flex items-center justify-between">
+        <div className="flex items-center gap-2 text-xs font-medium text-primary">
+          <Sparkles className="size-3.5" />
+          <span>AI Resume Optimizer</span>
+        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-7 text-xs gap-1 border-primary/40 text-primary hover:bg-primary/20"
+          onClick={handleEnhanceAll}
+          disabled={enhancing}
+        >
+          {enhancing ? (
+            <>
+              <Loader2 className="size-3 animate-spin" /> Enhancing…
+            </>
+          ) : (
+            <>
+              <Wand2 className="size-3" /> Auto-Enhance Resume
+            </>
+          )}
+        </Button>
+      </div>
+
       {/* Tabs */}
       <div className="scroll-thin flex gap-1 overflow-x-auto border-b border-border px-4 pt-1">
         {TABS.map((t) => {
@@ -202,7 +273,7 @@ function PersonalTab({
           <Label htmlFor="fullName">Full name</Label>
           <Input
             id="fullName"
-            placeholder="Rahul Sharma"
+            placeholder="Digvijay Singh"
             value={data.fullName}
             onChange={(e) => set('fullName', e.target.value)}
           />
@@ -221,7 +292,7 @@ function PersonalTab({
           <Input
             id="email"
             type="email"
-            placeholder="rahul@email.com"
+            placeholder="digvijay@email.com"
             value={data.email}
             onChange={(e) => set('email', e.target.value)}
           />
@@ -239,7 +310,7 @@ function PersonalTab({
           <Label htmlFor="location">Location</Label>
           <Input
             id="location"
-            placeholder="Mumbai, India"
+            placeholder="Bengaluru, India"
             value={data.location}
             onChange={(e) => set('location', e.target.value)}
           />
@@ -248,7 +319,7 @@ function PersonalTab({
           <Label htmlFor="linkedin">LinkedIn</Label>
           <Input
             id="linkedin"
-            placeholder="linkedin.com/in/rahul"
+            placeholder="linkedin.com/in/digvijaysingh"
             value={data.linkedin}
             onChange={(e) => set('linkedin', e.target.value)}
           />
@@ -257,7 +328,7 @@ function PersonalTab({
           <Label htmlFor="github">GitHub (optional)</Label>
           <Input
             id="github"
-            placeholder="github.com/rahul"
+            placeholder="github.com/digvijaysingh"
             value={data.github}
             onChange={(e) => set('github', e.target.value)}
           />
@@ -266,7 +337,7 @@ function PersonalTab({
           <Label htmlFor="website">Website (optional)</Label>
           <Input
             id="website"
-            placeholder="rahul.dev"
+            placeholder="digvijay.dev"
             value={data.website}
             onChange={(e) => set('website', e.target.value)}
           />
@@ -686,12 +757,12 @@ function SkillsTab({
             AI suggestions — tap to add
           </p>
           <div className="flex flex-wrap gap-2">
-            {suggestions.map((s) => (
+            {suggestions.map((s: string) => (
               <button
                 key={s}
                 onClick={() => {
                   addSkill(s)
-                  setSuggestions((prev) => prev.filter((x) => x !== s))
+                  setSuggestions((prev: string[]) => prev.filter((x: string) => x !== s))
                 }}
                 className="inline-flex items-center gap-1 rounded-lg border border-primary/40 bg-primary/10 px-3 py-1.5 text-sm text-primary transition-colors hover:bg-primary/20"
               >

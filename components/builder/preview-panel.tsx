@@ -1,17 +1,18 @@
-'use client'
-
 import { useMemo, useState } from 'react'
 import { ResumeDocument } from '@/components/resume/resume-document'
 import { PrintSheet } from '@/components/print-sheet'
 import { PhotoEditor } from '@/components/builder/photo-editor'
 import {
   SAMPLE_DATA,
+  TEMPLATES,
   THEMES,
   type DesignSettings,
   type ResumeData,
   type TemplateId,
   type ThemeId,
 } from '@/lib/resume-types'
+import { Gauge, Palette, LayoutTemplate } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 type Props = {
   data: ResumeData
@@ -19,6 +20,22 @@ type Props = {
   theme: ThemeId
   design: DesignSettings
   onChange: (updater: ResumeData | ((prev: ResumeData) => ResumeData)) => void
+  onTheme?: (id: ThemeId) => void
+  onTemplate?: (id: TemplateId) => void
+  onOpenAts?: () => void
+}
+
+/* Calculate real-time live ATS readiness score */
+function calculateAtsScore(d: ResumeData): number {
+  let score = 0
+  if (d.fullName?.trim()) score += 15
+  if (d.role?.trim()) score += 15
+  if (d.email?.trim() && d.phone?.trim()) score += 15
+  if (d.summary && d.summary.length > 30) score += 15
+  if (d.experience && d.experience.length >= 1 && d.experience.some((e) => e.bullets?.length)) score += 20
+  if (d.education && d.education.length >= 1) score += 10
+  if (d.skills && d.skills.length >= 4) score += 10
+  return Math.min(100, score)
 }
 
 /* If everything is empty, show the sample so the preview is never blank */
@@ -34,28 +51,81 @@ function isEmpty(d: ResumeData) {
   )
 }
 
-export function PreviewPanel({ data, template, theme, design, onChange }: Props) {
+export function PreviewPanel({
+  data,
+  template,
+  theme,
+  design,
+  onChange,
+  onTheme,
+  onTemplate,
+  onOpenAts,
+}: Props) {
   const accent = useMemo(() => THEMES.find((t) => t.id === theme) ?? THEMES[0], [theme])
   const [photoEditorOpen, setPhotoEditorOpen] = useState(false)
   const showSample = isEmpty(data)
   const rendered = showSample ? SAMPLE_DATA : data
+  const atsScore = calculateAtsScore(rendered)
 
   return (
     <div className="flex h-full flex-col">
-      <div className="no-print flex items-center justify-between border-b border-border px-6 py-3">
-        <div className="flex items-center gap-2">
+      <div className="no-print flex flex-wrap items-center justify-between gap-2 border-b border-border bg-popover/60 px-4 py-2.5 backdrop-blur">
+        <div className="flex items-center gap-3">
           <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             Live Preview
           </span>
-          {showSample && (
-            <span className="rounded-full border border-border bg-secondary/40 px-2 py-0.5 text-[10px] text-muted-foreground">
-              Empty sections show sample data
-            </span>
-          )}
+          <button
+            onClick={onOpenAts}
+            className={cn(
+              'flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-transform hover:scale-105',
+              atsScore >= 80
+                ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400'
+                : atsScore >= 50
+                ? 'border-amber-500/40 bg-amber-500/15 text-amber-400'
+                : 'border-rose-500/40 bg-rose-500/15 text-rose-400',
+            )}
+            title="Click to open detailed ATS Analyzer"
+          >
+            <Gauge className="size-3.5" />
+            <span>{atsScore}% ATS Score</span>
+          </button>
         </div>
-        <span className="text-xs text-muted-foreground">
-          {design.pageSize.toUpperCase()} · {accent.name}
-        </span>
+
+        {/* Quick Accent Color & Template Swapper */}
+        <div className="flex items-center gap-3">
+          {onTheme && (
+            <div className="flex items-center gap-1">
+              {THEMES.slice(0, 5).map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => onTheme(t.id)}
+                  style={{ backgroundColor: t.accent }}
+                  className={cn(
+                    'size-4 rounded-full transition-transform hover:scale-125',
+                    theme === t.id && 'ring-2 ring-foreground ring-offset-1 ring-offset-background',
+                  )}
+                  title={t.name}
+                />
+              ))}
+            </div>
+          )}
+          {onTemplate && (
+            <select
+              value={template}
+              onChange={(e) => onTemplate(e.target.value as TemplateId)}
+              className="rounded-lg border border-border bg-secondary/50 px-2 py-1 text-xs font-medium outline-none focus:border-primary"
+            >
+              {TEMPLATES.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          )}
+          <span className="text-[11px] text-muted-foreground hidden sm:inline">
+            {design.pageSize.toUpperCase()}
+          </span>
+        </div>
       </div>
 
       <div className="scroll-thin flex-1 overflow-auto p-4 sm:p-8">

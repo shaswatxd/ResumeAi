@@ -1,7 +1,7 @@
 'use client'
 
-import { Camera } from 'lucide-react'
 import {
+  Camera,
   Mail,
   Phone,
   MapPin,
@@ -9,6 +9,8 @@ import {
   Link as Linkedin,
   Code2 as Github,
   Link2,
+  Plus,
+  X,
 } from 'lucide-react'
 import type { AccentTheme, CustomSection, ResumeData } from '@/lib/resume-types'
 import { EditableBulletList, EditableChips, EditableText } from '@/components/resume/editable'
@@ -268,14 +270,14 @@ export function ExperienceBlock({ data, theme, S }: TP & { S: SectionComp }) {
     <S title="Experience" theme={theme}>
       <div className="flex flex-col gap-4">
         {data.experience.map((e) => (
-          <div key={e.id}>
+          <div key={e.id} className="group/item relative">
             <div className="flex items-baseline justify-between gap-3">
-              <div>
+              <div className="flex-1">
                 <EditableText
                   as="p"
                   className="font-semibold text-slate-900"
                   value={e.role}
-                  placeholder="Role"
+                  placeholder="Role / Title"
                   onChange={(v) =>
                     update((d) => ({
                       ...d,
@@ -287,7 +289,7 @@ export function ExperienceBlock({ data, theme, S }: TP & { S: SectionComp }) {
                   as="p"
                   className="font-medium"
                   value={e.company}
-                  placeholder="Company"
+                  placeholder="Company Name"
                   onChange={(v) =>
                     update((d) => ({
                       ...d,
@@ -297,29 +299,47 @@ export function ExperienceBlock({ data, theme, S }: TP & { S: SectionComp }) {
                   style={{ color: 'var(--doc-accent)' }}
                 />
               </div>
-              <span className="flex shrink-0 items-baseline gap-1 text-[11px] text-slate-400">
-                <EditableText
-                  value={e.start}
-                  placeholder="Start"
-                  onChange={(v) =>
-                    update((d) => ({
-                      ...d,
-                      experience: d.experience.map((x) => (x.id === e.id ? { ...x, start: v } : x)),
-                    }))
-                  }
-                />
-                —
-                <EditableText
-                  value={e.end}
-                  placeholder="End"
-                  onChange={(v) =>
-                    update((d) => ({
-                      ...d,
-                      experience: d.experience.map((x) => (x.id === e.id ? { ...x, end: v } : x)),
-                    }))
-                  }
-                />
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="flex shrink-0 items-baseline gap-1 text-[11px] text-slate-400">
+                  <EditableText
+                    value={e.start}
+                    placeholder="Start"
+                    onChange={(v) =>
+                      update((d) => ({
+                        ...d,
+                        experience: d.experience.map((x) => (x.id === e.id ? { ...x, start: v } : x)),
+                      }))
+                    }
+                  />
+                  —
+                  <EditableText
+                    value={e.end}
+                    placeholder="End"
+                    onChange={(v) =>
+                      update((d) => ({
+                        ...d,
+                        experience: d.experience.map((x) => (x.id === e.id ? { ...x, end: v } : x)),
+                      }))
+                    }
+                  />
+                </span>
+                {isEditable && (
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    onClick={() =>
+                      update((d) => ({
+                        ...d,
+                        experience: d.experience.filter((x) => x.id !== e.id),
+                      }))
+                    }
+                    className="no-print text-slate-300 opacity-0 transition-opacity hover:text-red-500 group-hover/item:opacity-100"
+                    aria-label="Remove experience"
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                )}
+              </div>
             </div>
             <EditableBulletList
               bullets={e.bullets}
@@ -332,6 +352,23 @@ export function ExperienceBlock({ data, theme, S }: TP & { S: SectionComp }) {
             />
           </div>
         ))}
+        {isEditable && (
+          <button
+            type="button"
+            onClick={() =>
+              update((d) => ({
+                ...d,
+                experience: [
+                  ...d.experience,
+                  { id: uid('exp'), role: '', company: '', start: '', end: '', bullets: [''] },
+                ],
+              }))
+            }
+            className="no-print self-start flex items-center gap-1 text-[11px] font-medium text-slate-400 hover:text-[color:var(--doc-accent)]"
+          >
+            <Plus className="size-3" /> Add Experience
+          </button>
+        )}
       </div>
     </S>
   )
@@ -344,8 +381,8 @@ export function EducationBlock({ data, theme, S }: TP & { S: SectionComp }) {
     <S title="Education" theme={theme}>
       <div className="flex flex-col gap-3">
         {data.education.map((ed) => (
-          <div key={ed.id} className="flex items-baseline justify-between gap-3">
-            <div>
+          <div key={ed.id} className="group/item flex items-baseline justify-between gap-3">
+            <div className="flex-1">
               <EditableText
                 as="p"
                 className="font-semibold text-slate-900"
@@ -362,7 +399,7 @@ export function EducationBlock({ data, theme, S }: TP & { S: SectionComp }) {
                 as="p"
                 className="font-medium"
                 value={ed.school}
-                placeholder="School"
+                placeholder="School / University"
                 onChange={(v) =>
                   update((d) => ({
                     ...d,
@@ -375,7 +412,7 @@ export function EducationBlock({ data, theme, S }: TP & { S: SectionComp }) {
                 as="p"
                 className="text-slate-500"
                 value={ed.detail}
-                placeholder="GPA, honors…"
+                placeholder="GPA, honors, detail…"
                 onChange={(v) =>
                   update((d) => ({
                     ...d,
@@ -384,31 +421,66 @@ export function EducationBlock({ data, theme, S }: TP & { S: SectionComp }) {
                 }
               />
             </div>
-            <span className="flex shrink-0 items-baseline gap-1 text-[11px] text-slate-400">
-              <EditableText
-                value={ed.start}
-                placeholder="Start"
-                onChange={(v) =>
-                  update((d) => ({
-                    ...d,
-                    education: d.education.map((x) => (x.id === ed.id ? { ...x, start: v } : x)),
-                  }))
-                }
-              />
-              —
-              <EditableText
-                value={ed.end}
-                placeholder="End"
-                onChange={(v) =>
-                  update((d) => ({
-                    ...d,
-                    education: d.education.map((x) => (x.id === ed.id ? { ...x, end: v } : x)),
-                  }))
-                }
-              />
-            </span>
+            <div className="flex items-baseline gap-2">
+              <span className="flex shrink-0 items-baseline gap-1 text-[11px] text-slate-400">
+                <EditableText
+                  value={ed.start}
+                  placeholder="Start"
+                  onChange={(v) =>
+                    update((d) => ({
+                      ...d,
+                      education: d.education.map((x) => (x.id === ed.id ? { ...x, start: v } : x)),
+                    }))
+                  }
+                />
+                —
+                <EditableText
+                  value={ed.end}
+                  placeholder="End"
+                  onChange={(v) =>
+                    update((d) => ({
+                      ...d,
+                      education: d.education.map((x) => (x.id === ed.id ? { ...x, end: v } : x)),
+                    }))
+                  }
+                />
+              </span>
+              {isEditable && (
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  onClick={() =>
+                    update((d) => ({
+                      ...d,
+                      education: d.education.filter((x) => x.id !== ed.id),
+                    }))
+                  }
+                  className="no-print text-slate-300 opacity-0 transition-opacity hover:text-red-500 group-hover/item:opacity-100"
+                  aria-label="Remove education"
+                >
+                  <X className="size-3.5" />
+                </button>
+              )}
+            </div>
           </div>
         ))}
+        {isEditable && (
+          <button
+            type="button"
+            onClick={() =>
+              update((d) => ({
+                ...d,
+                education: [
+                  ...d.education,
+                  { id: uid('edu'), degree: '', school: '', start: '', end: '', detail: '' },
+                ],
+              }))
+            }
+            className="no-print self-start flex items-center gap-1 text-[11px] font-medium text-slate-400 hover:text-[color:var(--doc-accent)]"
+          >
+            <Plus className="size-3" /> Add Education
+          </button>
+        )}
       </div>
     </S>
   )
@@ -421,44 +493,62 @@ export function ProjectsBlock({ data, theme, S }: TP & { S: SectionComp }) {
     <S title="Projects" theme={theme}>
       <div className="flex flex-col gap-3">
         {data.projects.map((p) => (
-          <div key={p.id}>
-            <div className="flex flex-wrap items-baseline gap-x-2">
-              <EditableText
-                as="p"
-                className="font-semibold text-slate-900"
-                value={p.name}
-                placeholder="Project name"
-                onChange={(v) =>
-                  update((d) => ({
-                    ...d,
-                    projects: d.projects.map((x) => (x.id === p.id ? { ...x, name: v } : x)),
-                  }))
-                }
-              />
-              <EditableText
-                className="text-[11px] text-slate-400"
-                value={p.tech}
-                placeholder="Tech stack"
-                onChange={(v) =>
-                  update((d) => ({
-                    ...d,
-                    projects: d.projects.map((x) => (x.id === p.id ? { ...x, tech: v } : x)),
-                  }))
-                }
-              />
-              <span className="flex items-center gap-1 text-[11px]" style={{ color: 'var(--doc-accent)' }}>
-                <Link2 className="size-3" />
+          <div key={p.id} className="group/item relative">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-2">
+              <div className="flex flex-wrap items-baseline gap-x-2 flex-1">
                 <EditableText
-                  value={p.link}
-                  placeholder="Link"
+                  as="p"
+                  className="font-semibold text-slate-900"
+                  value={p.name}
+                  placeholder="Project name"
                   onChange={(v) =>
                     update((d) => ({
                       ...d,
-                      projects: d.projects.map((x) => (x.id === p.id ? { ...x, link: v } : x)),
+                      projects: d.projects.map((x) => (x.id === p.id ? { ...x, name: v } : x)),
                     }))
                   }
                 />
-              </span>
+                <EditableText
+                  className="text-[11px] text-slate-400"
+                  value={p.tech}
+                  placeholder="Tech stack"
+                  onChange={(v) =>
+                    update((d) => ({
+                      ...d,
+                      projects: d.projects.map((x) => (x.id === p.id ? { ...x, tech: v } : x)),
+                    }))
+                  }
+                />
+                <span className="flex items-center gap-1 text-[11px]" style={{ color: 'var(--doc-accent)' }}>
+                  <Link2 className="size-3" />
+                  <EditableText
+                    value={p.link}
+                    placeholder="Link"
+                    onChange={(v) =>
+                      update((d) => ({
+                        ...d,
+                        projects: d.projects.map((x) => (x.id === p.id ? { ...x, link: v } : x)),
+                      }))
+                    }
+                  />
+                </span>
+              </div>
+              {isEditable && (
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  onClick={() =>
+                    update((d) => ({
+                      ...d,
+                      projects: d.projects.filter((x) => x.id !== p.id),
+                    }))
+                  }
+                  className="no-print text-slate-300 opacity-0 transition-opacity hover:text-red-500 group-hover/item:opacity-100"
+                  aria-label="Remove project"
+                >
+                  <X className="size-3.5" />
+                </button>
+              )}
             </div>
             <EditableText
               as="p"
@@ -475,6 +565,23 @@ export function ProjectsBlock({ data, theme, S }: TP & { S: SectionComp }) {
             />
           </div>
         ))}
+        {isEditable && (
+          <button
+            type="button"
+            onClick={() =>
+              update((d) => ({
+                ...d,
+                projects: [
+                  ...d.projects,
+                  { id: uid('prj'), name: '', link: '', tech: '', description: '' },
+                ],
+              }))
+            }
+            className="no-print self-start flex items-center gap-1 text-[11px] font-medium text-slate-400 hover:text-[color:var(--doc-accent)]"
+          >
+            <Plus className="size-3" /> Add Project
+          </button>
+        )}
       </div>
     </S>
   )
@@ -487,8 +594,8 @@ export function CertificationsBlock({ data, theme, S }: TP & { S: SectionComp })
     <S title="Certifications" theme={theme}>
       <div className="flex flex-col gap-1.5">
         {data.certifications.map((c) => (
-          <div key={c.id} className="flex items-baseline justify-between gap-3">
-            <p>
+          <div key={c.id} className="group/item flex items-baseline justify-between gap-3">
+            <p className="flex-1">
               <EditableText
                 as="span"
                 className="font-semibold text-slate-900"
@@ -516,20 +623,55 @@ export function CertificationsBlock({ data, theme, S }: TP & { S: SectionComp })
                 />
               </span>
             </p>
-            <span className="shrink-0 text-[11px] text-slate-400">
-              <EditableText
-                value={c.year}
-                placeholder="Year"
-                onChange={(v) =>
-                  update((d) => ({
-                    ...d,
-                    certifications: d.certifications.map((x) => (x.id === c.id ? { ...x, year: v } : x)),
-                  }))
-                }
-              />
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="shrink-0 text-[11px] text-slate-400">
+                <EditableText
+                  value={c.year}
+                  placeholder="Year"
+                  onChange={(v) =>
+                    update((d) => ({
+                      ...d,
+                      certifications: d.certifications.map((x) => (x.id === c.id ? { ...x, year: v } : x)),
+                    }))
+                  }
+                />
+              </span>
+              {isEditable && (
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  onClick={() =>
+                    update((d) => ({
+                      ...d,
+                      certifications: d.certifications.filter((x) => x.id !== c.id),
+                    }))
+                  }
+                  className="no-print text-slate-300 opacity-0 transition-opacity hover:text-red-500 group-hover/item:opacity-100"
+                  aria-label="Remove certification"
+                >
+                  <X className="size-3.5" />
+                </button>
+              )}
+            </div>
           </div>
         ))}
+        {isEditable && (
+          <button
+            type="button"
+            onClick={() =>
+              update((d) => ({
+                ...d,
+                certifications: [
+                  ...d.certifications,
+                  { id: uid('cert'), name: '', issuer: '', year: '' },
+                ],
+              }))
+            }
+            className="no-print self-start flex items-center gap-1 text-[11px] font-medium text-slate-400 hover:text-[color:var(--doc-accent)]"
+          >
+            <Plus className="size-3" /> Add Certification
+          </button>
+        )}
       </div>
     </S>
   )
@@ -553,9 +695,9 @@ export function LanguagesBlock({ data, theme, S }: TP & { S: SectionComp }) {
   if (data.languages.length === 0 && !isEditable) return null
   return (
     <S title="Languages" theme={theme}>
-      <div className="flex flex-wrap gap-x-5 gap-y-1">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5">
         {data.languages.map((l) => (
-          <span key={l.id}>
+          <span key={l.id} className="group/item inline-flex items-center gap-1">
             <EditableText
               as="span"
               className="font-medium text-slate-900"
@@ -582,8 +724,41 @@ export function LanguagesBlock({ data, theme, S }: TP & { S: SectionComp }) {
                 }
               />
             </span>
+            {isEditable && (
+              <button
+                type="button"
+                tabIndex={-1}
+                onClick={() =>
+                  update((d) => ({
+                    ...d,
+                    languages: d.languages.filter((x) => x.id !== l.id),
+                  }))
+                }
+                className="no-print ml-0.5 text-slate-300 opacity-0 transition-opacity hover:text-red-500 group-hover/item:opacity-100"
+                aria-label="Remove language"
+              >
+                <X className="size-3" />
+              </button>
+            )}
           </span>
         ))}
+        {isEditable && (
+          <button
+            type="button"
+            onClick={() =>
+              update((d) => ({
+                ...d,
+                languages: [
+                  ...d.languages,
+                  { id: uid('lang'), name: '', level: '' },
+                ],
+              }))
+            }
+            className="no-print flex items-center gap-1 text-[11px] font-medium text-slate-400 hover:text-[color:var(--doc-accent)]"
+          >
+            <Plus className="size-3" /> Add Language
+          </button>
+        )}
       </div>
     </S>
   )
@@ -608,61 +783,98 @@ export function ReferencesBlock({ data, theme, S }: TP & { S: SectionComp }) {
   if (data.references.length === 0 && !isEditable) return null
   return (
     <S title="References" theme={theme}>
-      <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-        {data.references.map((r) => (
-          <div key={r.id}>
-            <EditableText
-              as="p"
-              className="font-semibold text-slate-900"
-              value={r.name}
-              placeholder="Name"
-              onChange={(v) =>
-                update((d) => ({
-                  ...d,
-                  references: d.references.map((x) => (x.id === r.id ? { ...x, name: v } : x)),
-                }))
-              }
-            />
-            <EditableText
-              as="p"
-              className="text-slate-500"
-              value={r.title}
-              placeholder="Title, company"
-              onChange={(v) =>
-                update((d) => ({
-                  ...d,
-                  references: d.references.map((x) => (x.id === r.id ? { ...x, title: v } : x)),
-                }))
-              }
-            />
-            <p className="text-[11px] text-slate-500">
-              <span className="font-medium">Phone: </span>
+      <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+          {data.references.map((r) => (
+            <div key={r.id} className="group/item relative">
+              <div className="flex items-start justify-between gap-1">
+                <EditableText
+                  as="p"
+                  className="font-semibold text-slate-900"
+                  value={r.name}
+                  placeholder="Name"
+                  onChange={(v) =>
+                    update((d) => ({
+                      ...d,
+                      references: d.references.map((x) => (x.id === r.id ? { ...x, name: v } : x)),
+                    }))
+                  }
+                />
+                {isEditable && (
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    onClick={() =>
+                      update((d) => ({
+                        ...d,
+                        references: d.references.filter((x) => x.id !== r.id),
+                      }))
+                    }
+                    className="no-print text-slate-300 opacity-0 transition-opacity hover:text-red-500 group-hover/item:opacity-100"
+                    aria-label="Remove reference"
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                )}
+              </div>
               <EditableText
-                value={r.phone}
-                placeholder="Phone"
+                as="p"
+                className="text-slate-500"
+                value={r.title}
+                placeholder="Title, company"
                 onChange={(v) =>
                   update((d) => ({
                     ...d,
-                    references: d.references.map((x) => (x.id === r.id ? { ...x, phone: v } : x)),
+                    references: d.references.map((x) => (x.id === r.id ? { ...x, title: v } : x)),
                   }))
                 }
               />
-            </p>
-            <p className="text-[11px] text-slate-500">
-              <span className="font-medium">Email: </span>
-              <EditableText
-                value={r.email}
-                placeholder="Email"
-                onChange={(v) =>
-                  update((d) => ({
-                    ...d,
-                    references: d.references.map((x) => (x.id === r.id ? { ...x, email: v } : x)),
-                  }))
-                }
-              />
-            </p>
-          </div>
-        ))}
+              <p className="text-[11px] text-slate-500">
+                <span className="font-medium">Phone: </span>
+                <EditableText
+                  value={r.phone}
+                  placeholder="Phone"
+                  onChange={(v) =>
+                    update((d) => ({
+                      ...d,
+                      references: d.references.map((x) => (x.id === r.id ? { ...x, phone: v } : x)),
+                    }))
+                  }
+                />
+              </p>
+              <p className="text-[11px] text-slate-500">
+                <span className="font-medium">Email: </span>
+                <EditableText
+                  value={r.email}
+                  placeholder="Email"
+                  onChange={(v) =>
+                    update((d) => ({
+                      ...d,
+                      references: d.references.map((x) => (x.id === r.id ? { ...x, email: v } : x)),
+                    }))
+                  }
+                />
+              </p>
+            </div>
+          ))}
+        </div>
+        {isEditable && (
+          <button
+            type="button"
+            onClick={() =>
+              update((d) => ({
+                ...d,
+                references: [
+                  ...d.references,
+                  { id: uid('ref'), name: '', title: '', phone: '', email: '' },
+                ],
+              }))
+            }
+            className="no-print self-start flex items-center gap-1 text-[11px] font-medium text-slate-400 hover:text-[color:var(--doc-accent)]"
+          >
+            <Plus className="size-3" /> Add Reference
+          </button>
+        )}
       </div>
     </S>
   )
@@ -680,8 +892,8 @@ export function CustomSectionBlock({ section, theme, S }: { section: CustomSecti
     <S title={section.title || 'Custom Section'} theme={theme}>
       <div className="flex flex-col gap-3">
         {section.items.map((item) => (
-          <div key={item.id} className="flex items-baseline justify-between gap-3">
-            <div>
+          <div key={item.id} className="group/item flex items-baseline justify-between gap-3">
+            <div className="flex-1">
               <EditableText
                 as="p"
                 className="font-semibold text-slate-900"
@@ -710,13 +922,26 @@ export function CustomSectionBlock({ section, theme, S }: { section: CustomSecti
                 />
               )}
             </div>
-            <span className="shrink-0 text-[11px] text-slate-400">
-              <EditableText
-                value={item.date}
-                placeholder="Date"
-                onChange={(v) => patch((s) => ({ ...s, items: s.items.map((i) => (i.id === item.id ? { ...i, date: v } : i)) }))}
-              />
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="shrink-0 text-[11px] text-slate-400">
+                <EditableText
+                  value={item.date}
+                  placeholder="Date"
+                  onChange={(v) => patch((s) => ({ ...s, items: s.items.map((i) => (i.id === item.id ? { ...i, date: v } : i)) }))}
+                />
+              </span>
+              {isEditable && (
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  onClick={() => patch((s) => ({ ...s, items: s.items.filter((i) => i.id !== item.id) }))}
+                  className="no-print text-slate-300 opacity-0 transition-opacity hover:text-red-500 group-hover/item:opacity-100"
+                  aria-label="Remove item"
+                >
+                  <X className="size-3.5" />
+                </button>
+              )}
+            </div>
           </div>
         ))}
         {isEditable && (
@@ -728,9 +953,9 @@ export function CustomSectionBlock({ section, theme, S }: { section: CustomSecti
                 items: [...s.items, { id: uid('csi'), heading: '', subheading: '', date: '', description: '' }],
               }))
             }
-            className="no-print self-start text-[11px] font-medium text-slate-400 hover:text-[color:var(--doc-accent)]"
+            className="no-print self-start flex items-center gap-1 text-[11px] font-medium text-slate-400 hover:text-[color:var(--doc-accent)]"
           >
-            + Add item
+            <Plus className="size-3" /> Add item
           </button>
         )}
       </div>
