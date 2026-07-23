@@ -277,7 +277,6 @@ export function BuilderShell() {
             theme={theme}
             design={design}
             onChange={setData}
-            onTheme={setTheme}
             onTemplate={setTemplate}
             onOpenAts={() => setAtsOpen(true)}
           />

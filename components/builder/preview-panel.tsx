@@ -11,7 +11,7 @@ import {
   type TemplateId,
   type ThemeId,
 } from '@/lib/resume-types'
-import { Gauge, Palette, LayoutTemplate } from 'lucide-react'
+import { Gauge } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type Props = {
@@ -20,7 +20,6 @@ type Props = {
   theme: ThemeId
   design: DesignSettings
   onChange: (updater: ResumeData | ((prev: ResumeData) => ResumeData)) => void
-  onTheme?: (id: ThemeId) => void
   onTemplate?: (id: TemplateId) => void
   onOpenAts?: () => void
 }
@@ -57,7 +56,6 @@ export function PreviewPanel({
   theme,
   design,
   onChange,
-  onTheme,
   onTemplate,
   onOpenAts,
 }: Props) {
@@ -91,29 +89,12 @@ export function PreviewPanel({
           </button>
         </div>
 
-        {/* Quick Accent Color & Template Swapper */}
-        <div className="flex items-center gap-3">
-          {onTheme && (
-            <div className="flex items-center gap-1">
-              {THEMES.slice(0, 5).map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => onTheme(t.id)}
-                  style={{ backgroundColor: t.accent }}
-                  className={cn(
-                    'size-4 rounded-full transition-transform hover:scale-125',
-                    theme === t.id && 'ring-2 ring-foreground ring-offset-1 ring-offset-background',
-                  )}
-                  title={t.name}
-                />
-              ))}
-            </div>
-          )}
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
           {onTemplate && (
             <select
               value={template}
               onChange={(e) => onTemplate(e.target.value as TemplateId)}
-              className="rounded-lg border border-border bg-secondary/50 px-2 py-1 text-xs font-medium outline-none focus:border-primary"
+              className="rounded-lg border border-border bg-secondary/50 px-2.5 py-1 text-xs font-medium outline-none transition-colors hover:border-primary/50 focus:border-primary"
             >
               {TEMPLATES.map((t) => (
                 <option key={t.id} value={t.id}>
@@ -122,8 +103,8 @@ export function PreviewPanel({
               ))}
             </select>
           )}
-          <span className="text-[11px] text-muted-foreground hidden sm:inline">
-            {design.pageSize.toUpperCase()}
+          <span className="hidden rounded bg-secondary/80 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider sm:inline">
+            {design.pageSize}
           </span>
         </div>
       </div>

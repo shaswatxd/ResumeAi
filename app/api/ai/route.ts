@@ -12,36 +12,40 @@ export const maxDuration = 60
  */
 function providerChain(): { name: string; model: LanguageModel }[] {
   const chain: { name: string; model: LanguageModel }[] = []
-  if (process.env.GROQ_API_KEY) {
-    const groq = createGroq({ apiKey: process.env.GROQ_API_KEY })
+  const groqKey = process.env.GROQ_API_KEY
+  if (groqKey) {
+    const groq = createGroq({ apiKey: groqKey })
     chain.push({ name: 'groq', model: groq('llama-3.3-70b-versatile') })
   }
-  if (process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-    const google = createGoogleGenerativeAI({
-      apiKey:
-        process.env.GEMINI_API_KEY ?? process.env.GOOGLE_GENERATIVE_AI_API_KEY,
-    })
+  const googleKey = process.env.GEMINI_API_KEY ?? process.env.GOOGLE_GENERATIVE_AI_API_KEY
+  if (googleKey) {
+    const google = createGoogleGenerativeAI({ apiKey: googleKey })
     chain.push({ name: 'gemini', model: google('gemini-2.0-flash') })
   }
-  if (process.env.CEREBRAS_API_KEY) {
-    const cerebras = createCerebras({ apiKey: process.env.CEREBRAS_API_KEY })
+  const cerebrasKey = process.env.CEREBRAS_API_KEY
+  if (cerebrasKey) {
+    const cerebras = createCerebras({ apiKey: cerebrasKey })
     chain.push({ name: 'cerebras', model: cerebras('llama-3.3-70b') })
   }
   return chain
 }
 
 async function generate(opts: { system: string; prompt: string }) {
+  const providers = providerChain()
+  if (providers.length === 0) {
+    throw new Error('No AI API key found in server environment. Please ensure GROQ_API_KEY is configured in .env.local and restart the server.')
+  }
   let lastErr: Error | null = null
-  for (const { name, model } of providerChain()) {
+  for (const { name, model } of providers) {
     try {
       const { text } = await generateText({ model, ...opts })
       return text
     } catch (err) {
       lastErr = err as Error
-      console.log(`[ai] provider ${name} failed:`, lastErr.message)
+      console.error(`[ai] provider ${name} failed:`, lastErr.message)
     }
   }
-  throw lastErr ?? new Error('No AI provider available')
+  throw lastErr ?? new Error('All configured AI providers failed to respond.')
 }
 
 function extractJson(text: string): unknown {
@@ -277,9 +281,10 @@ export async function POST(req: Request) {
     })
     return Response.json({ text: text.trim() })
   } catch (err) {
-    console.log('[ai] route error:', (err as Error).message)
+    const errorMsg = err instanceof Error ? err.message : 'AI request failed. Please try again.'
+    console.error('[ai] route error:', errorMsg)
     return Response.json(
-      { error: 'AI request failed. Please try again.' },
+      { error: errorMsg },
       { status: 500 },
     )
   }
