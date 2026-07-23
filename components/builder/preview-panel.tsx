@@ -94,10 +94,14 @@ export function PreviewPanel({
             <select
               value={template}
               onChange={(e) => onTemplate(e.target.value as TemplateId)}
-              className="rounded-lg border border-border bg-secondary/50 px-2.5 py-1 text-xs font-medium outline-none transition-colors hover:border-primary/50 focus:border-primary"
+              className="rounded-lg border border-border bg-popover px-2.5 py-1 text-xs font-semibold text-foreground outline-none transition-colors hover:border-primary/50 focus:border-primary focus:ring-1 focus:ring-primary"
             >
               {TEMPLATES.map((t) => (
-                <option key={t.id} value={t.id}>
+                <option
+                  key={t.id}
+                  value={t.id}
+                  className="bg-slate-900 text-slate-100 dark:bg-slate-900 dark:text-slate-100"
+                >
                   {t.name}
                 </option>
               ))}
